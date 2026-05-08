@@ -1,0 +1,284 @@
+"use client"
+
+import { useEffect, useState, useCallback } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+
+const cardStyle = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: "16px",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+  padding: "16px 20px",
+  marginBottom: "10px",
+  width: "100%",
+  boxSizing: "border-box" as const,
+}
+
+const sectionLabelStyle = {
+  fontSize: "10px",
+  fontWeight: "600",
+  letterSpacing: "0.12em",
+  color: "rgba(255,255,255,0.35)",
+  marginBottom: "8px",
+  marginTop: "20px",
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
+}
+
+export default function SettingsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false)
+  const [connecting, setConnecting] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/login")
+  }, [status, router])
+
+  const checkCalendar = useCallback(async () => {
+    try {
+      const res = await fetch("/api/calendar/sync")
+      if (res.ok) {
+        const data = await res.json()
+        setIsCalendarConnected(data.connected)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (status === "authenticated") checkCalendar()
+  }, [status, checkCalendar])
+
+  const connectCalendar = async () => {
+    setConnecting(true)
+    try {
+      const res = await fetch("/api/calendar/connect")
+      if (res.ok) {
+        const data = await res.json()
+        window.location.href = data.url
+      }
+    } catch {}
+    setConnecting(false)
+  }
+
+  const syncCalendar = async () => {
+    setSyncing(true)
+    try {
+      const res = await fetch("/api/calendar/sync", { method: "POST" })
+      if (res.ok) checkCalendar()
+    } catch {}
+    setSyncing(false)
+  }
+
+  const disconnectCalendar = async () => {
+    try {
+      const res = await fetch("/api/calendar/sync", { method: "DELETE" })
+      if (res.ok) setIsCalendarConnected(false)
+    } catch {}
+  }
+
+  const togglePush = async () => {
+    if (!("Notification" in window)) return
+    if (pushEnabled) { setPushEnabled(false); return }
+    const permission = await Notification.requestPermission()
+    if (permission === "granted") {
+      setPushEnabled(true)
+      try {
+        const registration = await navigator.serviceWorker.register("/sw.js")
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ""),
+        })
+        await fetch("/api/push/subscribe", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription),
+        })
+      } catch {}
+    }
+  }
+
+  return (
+    <div style={{ padding: "20px 16px 24px", minHeight: "100vh", background: "#0d0d14" }}>
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={fadeUp}>
+          <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", marginBottom: "20px" }}>Settings</div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: "15px", fontWeight: 600, color: "white" }}>{session?.user?.name || "User"}</div>
+            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>{session?.user?.email}</div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={sectionLabelStyle}>CALENDAR</div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={cardStyle}>
+            {isCalendarConnected ? (
+              <>
+                <div style={{ fontSize: "14px", color: "white" }}>Google Calendar connected</div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>Read only</div>
+                <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                  <button onClick={syncCalendar} disabled={syncing} style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "10px",
+                    padding: "8px 16px",
+                    color: "white",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                    opacity: syncing ? 0.5 : 1,
+                  }}>
+                    {syncing ? "Syncing..." : "Sync Now"}
+                  </button>
+                  <button onClick={disconnectCalendar} style={{
+                    background: "rgba(255,50,50,0.15)",
+                    border: "1px solid rgba(255,50,50,0.3)",
+                    borderRadius: "10px",
+                    padding: "8px 16px",
+                    color: "rgba(255,100,100,1)",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}>
+                    Disconnect
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", padding: "8px 0" }}>
+                <div style={{ fontSize: "15px", fontWeight: 700, color: "white", marginBottom: "4px" }}>Connect Calendar</div>
+                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginBottom: "14px", lineHeight: 1.4 }}>
+                  Read-only sync to find workout windows.
+                </p>
+                <button onClick={connectCalendar} disabled={connecting} style={{
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "10px",
+                  padding: "10px 20px",
+                  color: "white",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  opacity: connecting ? 0.5 : 1,
+                }}>
+                  {connecting ? "Connecting..." : "Sign in with Google"}
+                </button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={sectionLabelStyle}>PREFERENCES</div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: "14px", color: "white" }}>Push Notifications</div>
+              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>{pushEnabled ? "Enabled" : "Workout reminders"}</div>
+            </div>
+            <div onClick={togglePush} style={{ width: 48, height: 28, borderRadius: 14, position: "relative", background: pushEnabled ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.08)", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.3)", transition: "transform 0.2s", transform: pushEnabled ? "translateX(24px)" : "translateX(3px)" }} />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: "14px", color: "white" }}>Version</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)" }}>1.0.0</div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={sectionLabelStyle}>STATS</div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            {[
+              ["100%", "Auto-scheduled"],
+              ["25m", "Avg workout"],
+              ["0", "Decisions"],
+              ["7", "Days"],
+            ].map(([value, label], i) => (
+              <div key={i} style={{ ...cardStyle, textAlign: "center", marginBottom: 0 }}>
+                <div style={{ fontSize: "28px", fontWeight: "bold", color: "white" }}>{value}</div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "4px" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" as const, delay: 0.7 }}
+      >
+        <button onClick={async () => { await signOut({ callbackUrl: '/login', redirect: true }) }} style={{
+          width: "100%",
+          marginTop: "20px",
+          background: "rgba(255,50,50,0.1)",
+          border: "1px solid rgba(255,50,50,0.25)",
+          borderRadius: "14px",
+          padding: "13px",
+          color: "rgba(255,100,100,1)",
+          fontSize: "14px",
+          fontWeight: "600",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+        }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sign Out
+        </button>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.85 }}
+      >
+        <div style={{ textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "16px" }}>
+          FitSched v1.0.0
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+  return outputArray
+}

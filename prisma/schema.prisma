@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  workoutPlans        WorkoutPlan[]
+  workoutLogs         WorkoutLog[]
+  exercises           Exercise[]
+  calendarConnections CalendarConnection[]
+  pushSubscriptions   PushSubscription[]
+  chatMessages        ChatMessage[]
+  workoutSchedules    WorkoutSchedule[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  CORE
+  ARMS
+  FULL_BODY
+  CARDIO
+  REST
+}
+
+enum Equipment {
+  BODYWEIGHT
+  DUMBBELLS
+  BARBELL
+  MACHINE
+  CABLES
+  BANDS
+  KETTLEBELL
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Exercise {
+  id          String      @id @default(cuid())
+  userId      String?
+  name        String
+  description String?
+  muscleGroup MuscleGroup
+  equipment   Equipment   @default(BODYWEIGHT)
+  difficulty  Difficulty  @default(BEGINNER)
+  isSystem    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  user                 User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutPlanExercises WorkoutPlanExercise[]
+  workoutLogSets       WorkoutLogSet[]
+  workoutLogs          WorkoutLog[]
+
+  @@index([userId])
+  @@index([muscleGroup])
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      ChatRole
+  content   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model WorkoutPlan {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime?
+  isAIGenerated Boolean   @default(false)
+  aiPrompt      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days      WorkoutPlanDay[]
+  exercises WorkoutPlanExercise[]
+
+  @@index([userId])
+}
+
+model WorkoutPlanDay {
+  id            String      @id @default(cuid())
+  planId        String
+  dayOfWeek     Int
+  muscleGroup   MuscleGroup
+  order         Int
+  scheduledTime DateTime?
+  notes         String?
+
+  plan      WorkoutPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercises WorkoutPlanExercise[]
+
+  @@index([planId])
+}
+
+model WorkoutPlanExercise {
+  id          String  @id @default(cuid())
+  planId      String
+  dayId       String?
+  exerciseId  String
+  sets        Int
+  reps        Int
+  duration    Int?
+  restSeconds Int     @default(60)
+  order       Int
+  notes       String?
+
+  plan     WorkoutPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  day      WorkoutPlanDay? @relation(fields: [dayId], references: [id], onDelete: SetNull)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+
+  @@index([planId])
+  @@index([dayId])
+}
+
+model WorkoutLog {
+  id          String   @id @default(cuid())
+  userId      String
+  exerciseId  String
+  date        DateTime
+  duration    Int?
+  notes       String?
+  rating      Int?
+  completedAt DateTime @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets     WorkoutLogSet[]
+
+  @@index([userId])
+  @@index([date])
+  @@index([exerciseId])
+}
+
+model WorkoutLogSet {
+  id        String  @id @default(cuid())
+  logId     String
+  setNumber Int
+  reps      Int
+  weight    Float?
+  duration  Int?
+  completed Boolean @default(true)
+
+  log        WorkoutLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+  exercise   Exercise?  @relation(fields: [exerciseId], references: [id])
+  exerciseId String?
+
+  @@index([logId])
+}
+
+model CalendarConnection {
+  id           String    @id @default(cuid())
+  userId       String
+  googleToken  String
+  refreshToken String
+  tokenExpiry  DateTime
+  calendarId   String    @default("primary")
+  lastSyncedAt DateTime?
+  connectedAt  DateTime  @default(now())
+
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events CalendarEvent[]
+
+  @@unique([userId, calendarId])
+}
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  connectionId  String
+  googleEventId String
+  summary       String
+  startTime     DateTime
+  endTime       DateTime
+  isAllDay      Boolean  @default(false)
+  syncedAt      DateTime @default(now())
+
+  connection CalendarConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+  @@index([startTime])
+}
+
+model WorkoutSchedule {
+  id          String   @id @default(cuid())
+  userId      String
+  date        String
+  workoutName String
+  exercises   Json
+  source      String   @default("ai")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
