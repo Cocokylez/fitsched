@@ -283,9 +283,9 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-transparent px-3 pb-6 pt-6 min-[420px]:px-4">
-      <motion.div initial="hidden" animate="visible" className="mx-auto max-w-[720px]">
-        <motion.header variants={fadeUp} className="mb-6 flex items-end justify-between gap-4">
+    <div className="min-h-dvh bg-transparent px-4 pb-[118px] pt-8 sm:px-6">
+      <motion.div initial="hidden" animate="visible" className="mx-auto w-full max-w-[640px]">
+        <motion.header variants={fadeUp} className="mb-7 flex items-end justify-between gap-4">
           <div className="min-w-0">
             <p className="label-text mb-2 text-[10px] text-[var(--text-muted)]">Body intelligence</p>
             <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
@@ -296,9 +296,9 @@ export default function ReportPage() {
         </motion.header>
 
         {loading ? (
-          <motion.div variants={fadeUp} className="grid gap-3">
+          <motion.div variants={fadeUp} className="grid gap-4">
             <SkeletonCard height="120px" />
-            <SkeletonCard height="200px" />
+            <SkeletonCard height="160px" />
             <SkeletonCard height="160px" />
           </motion.div>
         ) : (
@@ -334,7 +334,7 @@ export default function ReportPage() {
                 })}
               </div>
 
-              <div className="grid grid-cols-2 divide-x divide-[var(--border)] border-t border-[var(--border)] pt-4">
+              <div className="grid grid-cols-1 gap-3 border-t border-[var(--border)] pt-4 min-[520px]:grid-cols-2 min-[520px]:divide-x min-[520px]:divide-[var(--border)]">
                 <div>
                   <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                     <Flame size={16} className="text-[#e8842a]" />
@@ -342,14 +342,14 @@ export default function ReportPage() {
                   </div>
                   <div className="number-text mt-1 text-[24px] font-black text-[var(--text)]">{streak?.streak || 0}</div>
                 </div>
-                <div className="pl-5 text-right">
+                <div className="min-[520px]:pl-5 min-[520px]:text-right">
                   <div className="text-xs font-bold text-[var(--text-muted)]">Personal best</div>
                   <div className="number-text mt-1 text-[24px] font-black text-[var(--text)]">{longestStreak} days</div>
                 </div>
               </div>
             </motion.section>
 
-            <motion.section variants={fadeUp} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <motion.section variants={fadeUp} className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div className="ios-inset-grouped p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <Scale size={19} className="text-[var(--accent-strong)]" />
@@ -408,7 +408,7 @@ export default function ReportPage() {
               </div>
 
               <form onSubmit={saveMetrics} className="grid gap-3 border-t border-[var(--border)] pt-5">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <label className="grid gap-1.5">
                     <span className="flex items-center gap-2 text-xs font-extrabold text-[var(--text-muted)]">
                       <Ruler size={14} />

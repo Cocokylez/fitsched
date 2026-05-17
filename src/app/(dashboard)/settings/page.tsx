@@ -348,8 +348,8 @@ export default function SettingsPage() {
     : 0
 
   return (
-    <div style={{ padding: "24px 16px 28px", minHeight: "100vh", background: "transparent" }}>
-      <motion.div variants={stagger} initial="hidden" animate="visible">
+    <div style={{ padding: "32px 16px 118px", minHeight: "100vh", background: "transparent" }}>
+      <motion.div variants={stagger} initial="hidden" animate="visible" style={{ width: "100%", maxWidth: 720, margin: "0 auto" }}>
         <motion.div variants={fadeUp}>
           <div style={{ fontSize: "22px", fontWeight: "bold", color: "var(--text)", marginBottom: "18px" }}>
             <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>

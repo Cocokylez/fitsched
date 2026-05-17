@@ -12,12 +12,9 @@ const HIKE_FEATURES = [
  */
 export default function HikePage() {
   return (
-    <div
-      data-dashboard-scroll
-      className="min-h-dvh overflow-y-auto bg-transparent px-4 pb-[112px] pt-6"
-    >
-      <div className="mx-auto max-w-[560px]">
-        <div className="mb-5">
+    <div className="min-h-full bg-transparent px-4 pb-[118px] pt-8 sm:px-6">
+      <div className="mx-auto max-w-[520px]">
+        <div className="mb-7">
           <div className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-[rgba(107,191,184,0.3)] bg-[rgba(107,191,184,0.1)] px-3 py-[7px] text-[11px] font-black uppercase tracking-[0.08em] text-[#6bbfb8]">
             <Footprints size={14} strokeWidth={1.9} />
             Hike
@@ -30,7 +27,7 @@ export default function HikePage() {
           </p>
         </div>
 
-        <div className="relative grid min-h-[300px] place-items-center overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--panel)] px-5 py-7 text-center shadow-[var(--shadow)]">
+        <div className="relative grid min-h-[320px] place-items-center overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--panel)] px-5 py-8 text-center shadow-[var(--shadow)]">
           <div className="pointer-events-none absolute inset-0 [background:linear-gradient(135deg,rgba(107,191,184,0.12),transparent_42%),radial-gradient(circle_at_70%_24%,rgba(255,255,255,0.07),transparent_28%)]" />
 
           <div className="relative w-full">

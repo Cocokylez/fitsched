@@ -122,7 +122,7 @@ body {
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   font-optical-sizing: auto;
   font-synthesis-weight: none;
-  letter-spacing: -0.006em;
+  letter-spacing: 0;
   background:
     radial-gradient(circle at 50% -12rem, rgba(107, 191, 184, 0.12), transparent 32rem),
     linear-gradient(180deg, rgba(107, 191, 184, 0.035), transparent 26rem),
