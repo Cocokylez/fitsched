@@ -14,7 +14,7 @@ export default function HikePage() {
   return (
     <div
       data-dashboard-scroll
-      className="min-h-screen overflow-y-auto bg-[var(--bg)] px-4 pb-[110px] pt-[22px]"
+      className="min-h-dvh overflow-y-auto bg-transparent px-4 pb-[112px] pt-6"
     >
       <div className="mx-auto max-w-[560px]">
         <div className="mb-5">
@@ -30,7 +30,7 @@ export default function HikePage() {
           </p>
         </div>
 
-        <div className="relative grid min-h-[280px] place-items-center overflow-hidden rounded-[22px] border border-[var(--border)] bg-[var(--surface)] px-[22px] py-[26px] text-center">
+        <div className="relative grid min-h-[300px] place-items-center overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--panel)] px-5 py-7 text-center shadow-[var(--shadow)]">
           <div className="pointer-events-none absolute inset-0 [background:linear-gradient(135deg,rgba(107,191,184,0.12),transparent_42%),radial-gradient(circle_at_70%_24%,rgba(255,255,255,0.07),transparent_28%)]" />
 
           <div className="relative w-full">
@@ -45,11 +45,11 @@ export default function HikePage() {
               This page is ready for tomorrow&apos;s details, so the hike feature can grow without mixing into normal workouts.
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               {HIKE_FEATURES.map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-center justify-center gap-2 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-3.5 text-xs font-extrabold text-[var(--text)]"
+                  className="flex min-h-[48px] items-center justify-center gap-2 rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-3 text-xs font-extrabold text-[var(--text)]"
                 >
                   <item.Icon size={16} strokeWidth={1.8} className="text-[#6bbfb8]" />
                   {item.label}

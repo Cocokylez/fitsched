@@ -45,16 +45,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[var(--bg)] px-4 pb-6">
+    <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-[var(--bg)] px-4 pb-8 pt-3">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(107,191,184,0.14),transparent_34%)]" />
       <AuthTopControls />
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex min-h-[36vh] flex-col items-center justify-center bg-[linear-gradient(180deg,rgba(107,191,184,0.1)_0%,transparent_78%)]"
+        className="relative flex min-h-[250px] flex-col items-center justify-center pt-12"
       >
-        <div className="brand-wordmark text-[34px] font-black text-[var(--text)]">{t.fitSched}</div>
+        <div className="brand-wordmark text-[35px] font-black leading-none text-[var(--text)]">{t.fitSched}</div>
         <div className="mt-1.5 text-[13px] text-[var(--text-muted)]">{t.startJourney}</div>
       </motion.div>
 
@@ -62,7 +63,7 @@ export default function RegisterPage() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
-        className="relative z-[2] mx-auto -mt-7 w-full max-w-[480px] rounded-[28px] border border-[var(--border)] bg-[var(--panel)] px-6 pb-10 pt-8 shadow-[var(--shadow-lg)] backdrop-blur-[24px]"
+        className="relative z-[2] mx-auto -mt-8 w-full max-w-[440px] rounded-[30px] border border-[var(--border)] bg-[var(--panel)] px-5 pb-8 pt-7 shadow-[var(--shadow-lg)] backdrop-blur-[24px] sm:px-6 sm:pb-10 sm:pt-8"
       >
         <motion.div
           initial="hidden"
@@ -90,7 +91,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Your name"
-                className="mb-4 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3.5 text-sm text-[var(--text)] outline-none"
+                className="mb-4 min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none"
               />
             </motion.div>
 
@@ -104,7 +105,7 @@ export default function RegisterPage() {
                 autoCapitalize="none"
                 autoCorrect="off"
                 required
-                className="mb-4 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3.5 text-sm text-[var(--text)] outline-none"
+                className="mb-4 min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none"
               />
             </motion.div>
 
@@ -117,7 +118,7 @@ export default function RegisterPage() {
                 placeholder="Min 8 characters"
                 required
                 minLength={8}
-                className="mb-6 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3.5 text-sm text-[var(--text)] outline-none"
+                className="mb-6 min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none"
               />
             </motion.div>
 
@@ -125,7 +126,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`motion-lift mb-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-[var(--text)] p-[15px] text-[15px] font-bold text-[var(--bg)] ${
+                className={`motion-lift mb-5 flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-[var(--text)] px-4 text-[15px] font-extrabold text-[var(--bg)] ${
                   loading ? "opacity-50" : "opacity-100"
                 }`}
               >

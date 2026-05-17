@@ -86,18 +86,6 @@ function FreezeHalo({ active }: { active: boolean }) {
         pointerEvents: "none",
       }}
     >
-      <motion.span
-        animate={{ scale: active ? [0.88, 1.08, 0.96] : [0.84, 0.98, 0.9], opacity: active ? [0.22, 0.54, 0.34] : [0.12, 0.3, 0.16] }}
-        transition={{ duration: 1.4, repeat: active ? Infinity : 0, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          width: 154,
-          height: 154,
-          borderRadius: "50%",
-          border: "1px solid rgba(139, 226, 255, 0.38)",
-          boxShadow: "inset 0 0 30px rgba(139,226,255,0.14), 0 0 34px rgba(107,191,184,0.16)",
-        }}
-      />
       {shards.map((shard) => (
         <motion.span
           key={shard.id}
@@ -187,25 +175,6 @@ function FireBurst({ broken, frozen }: { broken: boolean; frozen?: boolean }) {
   return (
     <div style={{ position: "relative", width: 184, height: 190, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <motion.div
-        aria-hidden="true"
-        animate={{
-          opacity: broken ? [0.18, 0.04] : frozen ? [0.22, 0.48, 0.26] : [0.32, 0.64, 0.36],
-          scale: broken ? [1, 0.78] : [0.92, 1.08, 0.96],
-        }}
-        transition={{ duration: broken ? 0.9 : 1.8, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          width: 176,
-          height: 176,
-          borderRadius: "50%",
-          background: frozen
-            ? "radial-gradient(circle, rgba(163,237,255,0.52), rgba(107,191,184,0.16) 45%, transparent 72%)"
-            : "radial-gradient(circle, rgba(255,205,86,0.52), rgba(255,92,46,0.2) 48%, transparent 72%)",
-          filter: "blur(10px)",
-        }}
-      />
-
-      <motion.div
         key={broken ? "broken" : frozen ? "frozen" : "active"}
         initial={{ opacity: 0, y: 28, scale: 0.5, rotate: -7 }}
         animate={broken
@@ -244,20 +213,6 @@ function FireBurst({ broken, frozen }: { broken: boolean; frozen?: boolean }) {
       <RisingEmbers active={active} />
 
       {frozen && <FreezeHalo active={frozen} />}
-
-      {!broken && !shouldReduceMotion && (
-        <motion.span
-          initial={{ scale: 0.75, opacity: 0 }}
-          animate={{ scale: [0.75, 1.2, 0.98], opacity: [0, 0.28, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-          style={{
-            position: "absolute",
-            inset: 12,
-            borderRadius: "50%",
-            border: "1px solid rgba(255, 163, 59, 0.28)",
-          }}
-        />
-      )}
 
       {broken && !shouldReduceMotion && (
         <>

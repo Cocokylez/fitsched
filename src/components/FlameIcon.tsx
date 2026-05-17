@@ -25,16 +25,22 @@ export default function FlameIcon({ size = 120 }: FlameIconProps) {
           .flameIconOuter {
             animation: flameIconOuterMorph 1.85s ease-in-out infinite;
             transform-origin: 60px 94px;
+            transform-box: fill-box;
+            will-change: transform;
           }
 
           .flameIconMid {
             animation: flameIconMidMorph 1.35s ease-in-out -0.22s infinite;
             transform-origin: 60px 94px;
+            transform-box: fill-box;
+            will-change: transform;
           }
 
           .flameIconInner {
             animation: flameIconInnerMorph 1.05s ease-in-out -0.48s infinite;
             transform-origin: 60px 92px;
+            transform-box: fill-box;
+            will-change: transform;
           }
 
           .flameIconEmber {

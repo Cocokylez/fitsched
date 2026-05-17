@@ -133,22 +133,22 @@ export function AuthGoogleButton({
 
   return (
     <>
-    <button
-      type="button"
-      onClick={startGooglePopup}
-      disabled={waiting || checkingGoogle || !googleAvailable}
-      className={`mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5 text-sm text-[var(--text)] ${
-        waiting || checkingGoogle || !googleAvailable ? "cursor-default opacity-70" : "cursor-pointer opacity-100"
-      }`}
-    >
-      <Image src="/google.svg" width={16} height={16} alt="Google" />
-      {checkingGoogle ? "Checking Google..." : !googleAvailable ? "Google sign in unavailable" : waiting ? "Waiting for Google..." : label}
-    </button>
-    {error && (
-      <div className="-mt-3.5 mb-4 text-center text-xs text-[#ff6666]">
-        {error}
-      </div>
-    )}
+      <button
+        type="button"
+        onClick={startGooglePopup}
+        disabled={waiting || checkingGoogle || !googleAvailable}
+        className={`motion-lift mb-5 flex min-h-[50px] w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-bold text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${
+          waiting || checkingGoogle || !googleAvailable ? "cursor-default opacity-70" : "cursor-pointer opacity-100"
+        }`}
+      >
+        <Image src="/google.svg" width={16} height={16} alt="Google" />
+        {checkingGoogle ? "Checking Google..." : !googleAvailable ? "Google sign in unavailable" : waiting ? "Waiting for Google..." : label}
+      </button>
+      {error && (
+        <div className="-mt-3.5 mb-4 text-center text-xs text-[#ff6666]">
+          {error}
+        </div>
+      )}
     </>
   )
 }

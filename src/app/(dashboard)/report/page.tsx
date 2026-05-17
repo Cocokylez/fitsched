@@ -283,14 +283,14 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-transparent px-4 pb-6 pt-6">
+    <div className="min-h-dvh bg-transparent px-3 pb-6 pt-6 min-[420px]:px-4">
       <motion.div initial="hidden" animate="visible" className="mx-auto max-w-[720px]">
-        <motion.header variants={fadeUp} className="mb-5 flex items-end justify-between gap-4">
-          <div>
+        <motion.header variants={fadeUp} className="mb-6 flex items-end justify-between gap-4">
+          <div className="min-w-0">
             <p className="label-text mb-2 text-[10px] text-[var(--text-muted)]">Body intelligence</p>
-            <h1 className="display-text text-[34px] font-black leading-none text-[var(--text)]">Report</h1>
+            <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
           </div>
-          <div className="grid h-12 w-12 place-items-center rounded-[18px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)] shadow-[var(--shadow)]">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)] shadow-[var(--shadow)]">
             <ReportGlyph kind="body" />
           </div>
         </motion.header>
@@ -303,16 +303,16 @@ export default function ReportPage() {
           </motion.div>
         ) : (
           <div className="grid gap-4">
-            <motion.section variants={fadeUp} className="ios-inset-grouped p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
+            <motion.section variants={fadeUp} className="ios-inset-grouped p-4 min-[420px]:p-5">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="min-w-0">
                   <div className="text-[15px] font-black text-[var(--text)]">Weekly pulse</div>
                   <div className="mt-1 text-xs text-[var(--text-muted)]">Training consistency without cluttering Profile.</div>
                 </div>
                 <ReportGlyph kind="week" />
               </div>
 
-              <div className="mb-4 grid grid-cols-7 gap-1.5">
+              <div className="mb-4 grid grid-cols-7 gap-1">
                 {weekDays.map((day) => {
                   const dateId = toDateId(day)
                   const active = dateId === toDateId(new Date())
@@ -320,7 +320,7 @@ export default function ReportPage() {
                   return (
                     <div
                       key={dateId}
-                      className={`grid min-h-[46px] place-items-center rounded-2xl border text-[13px] font-black ${
+                      className={`grid min-h-[42px] place-items-center rounded-[15px] border text-[13px] font-black ${
                         active
                           ? "border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]"
                           : completed
@@ -349,7 +349,7 @@ export default function ReportPage() {
               </div>
             </motion.section>
 
-            <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
+            <motion.section variants={fadeUp} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="ios-inset-grouped p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <Scale size={19} className="text-[var(--accent-strong)]" />
@@ -370,16 +370,16 @@ export default function ReportPage() {
               </div>
             </motion.section>
 
-            <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden p-5">
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <div>
+            <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden p-4 min-[420px]:p-5">
+              <div className="mb-5 flex items-start justify-between gap-3">
+                <div className="min-w-0">
                   <div className="text-[15px] font-black text-[var(--text)]">BMI</div>
                   <div className="mt-1 text-xs text-[var(--text-muted)]">Used as context, not a judgment.</div>
                 </div>
                 <ReportGlyph kind="bmi" />
               </div>
 
-              <div className="mb-5 flex items-end justify-between gap-4">
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
                 <div className="number-text text-[42px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</div>
                 <div className="mb-1 flex items-center gap-2 text-sm font-extrabold" style={{ color: bmiStatus.color }}>
                   <span className="h-3 w-3 rounded-full" style={{ background: bmiStatus.color }} />
@@ -408,7 +408,7 @@ export default function ReportPage() {
               </div>
 
               <form onSubmit={saveMetrics} className="grid gap-3 border-t border-[var(--border)] pt-5">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className="grid gap-1.5">
                     <span className="flex items-center gap-2 text-xs font-extrabold text-[var(--text-muted)]">
                       <Ruler size={14} />
