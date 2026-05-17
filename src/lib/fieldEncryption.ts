@@ -1,9 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto"
+import { serverEnv } from "@/lib/env"
 
 const PREFIX = "enc:v1:"
 
 function getFieldEncryptionKey() {
-  const raw = process.env.FIELD_ENCRYPTION_KEY
+  const raw = serverEnv.fieldEncryptionKey
   if (!raw) return null
 
   const normalized = raw.trim()

@@ -1,5 +1,8 @@
 import { auth } from "@/lib/auth";
+import { internalError, unauthorized } from "@/lib/apiResponse";
+import { serverEnv } from "@/lib/env";
 import { rateLimitByUser, rateLimitPresets } from "@/lib/security";
+import { parseQuery, strictObject } from "@/lib/validation";
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
@@ -7,12 +10,15 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.strictWrite, "calendar:connect");
     if (limited) return limited;
 
-    if (!process.env.GOOGLE_CALENDAR_CLIENT_ID || !process.env.GOOGLE_CALENDAR_CLIENT_SECRET) {
+    const parsedQuery = parseQuery(req, strictObject({}));
+    if (parsedQuery.response) return parsedQuery.response;
+
+    if (!serverEnv.googleCalendarClientId || !serverEnv.googleCalendarClientSecret) {
       return NextResponse.json({ error: "Calendar integration is not configured" }, { status: 503 });
     }
 
@@ -20,8 +26,8 @@ export async function GET(req: Request) {
     const state = crypto.randomUUID();
 
     const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CALENDAR_CLIENT_ID,
-      process.env.GOOGLE_CALENDAR_CLIENT_SECRET,
+      serverEnv.googleCalendarClientId,
+      serverEnv.googleCalendarClientSecret,
       `${origin}/api/calendar/callback`
     );
 
@@ -44,9 +50,6 @@ export async function GET(req: Request) {
 
     return response;
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to generate auth URL" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "calendar:connect" }, "Failed to generate auth URL");
   }
 }

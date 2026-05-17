@@ -5,14 +5,15 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { compare, hash } from "bcryptjs"
 import { db } from "./db"
 import { cleanText, logSecurityEvent } from "./security"
+import { serverEnv } from "./env"
+import { z } from "./validation"
 
-function normalizeEmail(value: unknown) {
-  return typeof value === "string" ? value.trim().toLowerCase().slice(0, 254) : ""
-}
-
-function normalizePassword(value: unknown) {
-  return typeof value === "string" ? value : ""
-}
+const credentialsSchema = z.object({
+  email: z.string().email().max(254).transform((value) => value.trim().toLowerCase()),
+  password: z.string().min(1).max(128),
+  name: z.string().max(80).optional(),
+  action: z.enum(["login", "register"]).optional().default("login"),
+})
 
 const providers: any[] = [
   CredentialsProvider({
@@ -24,11 +25,10 @@ const providers: any[] = [
       action: { label: "Action", type: "text" },
     },
     async authorize(credentials) {
-      const email = normalizeEmail(credentials?.email)
-      const password = normalizePassword(credentials?.password)
-      const action = typeof credentials?.action === "string" ? credentials.action : "login"
+      const parsedCredentials = credentialsSchema.safeParse(credentials)
+      if (!parsedCredentials.success) return null
 
-      if (!email || !password || password.length > 128) return null
+      const { email, password, action } = parsedCredentials.data
 
       if (action === "register") {
         if (password.length < 8) {
@@ -45,11 +45,15 @@ const providers: any[] = [
         const user = await db.user.create({
           data: {
             email,
-            name: cleanText(credentials.name, 80) || null,
+            name: cleanText(parsedCredentials.data.name, 80) || null,
             password: hashed,
           },
         })
-        return user
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        }
       }
 
       const user = await db.user.findUnique({
@@ -66,16 +70,20 @@ const providers: any[] = [
         return null
       }
 
-      return user
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      }
     },
   }),
 ]
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (serverEnv.googleClientId && serverEnv.googleClientSecret) {
   providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: serverEnv.googleClientId,
+      clientSecret: serverEnv.googleClientSecret,
       allowDangerousEmailAccountLinking: true,
     })
   )
@@ -83,7 +91,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: serverEnv.authSecret,
   adapter: PrismaAdapter(db),
   providers,
   pages: {
@@ -91,7 +99,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 7 * 24 * 60 * 60,
   },
   callbacks: {
     async session({ session, token }: any) {

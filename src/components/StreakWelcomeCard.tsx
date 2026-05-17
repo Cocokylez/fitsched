@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRight, Dumbbell, Snowflake, X } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
+import FlameIcon from "@/components/FlameIcon"
 
 type StreakWelcomeCardProps = {
   streak: number
@@ -12,6 +13,7 @@ type StreakWelcomeCardProps = {
 }
 
 const confettiColors = ["#6bbfb8", "#f6c85f", "#ff8a65", "#8fa8ff", "#ffffff"]
+const emberColors = ["#fff4b0", "#e8842a", "#c9a84c", "#ffffff"]
 
 function ConfettiAroundButton() {
   const shouldReduceMotion = useReducedMotion()
@@ -122,94 +124,124 @@ function FreezeHalo({ active }: { active: boolean }) {
   )
 }
 
-function FireBurst({ broken, frozen }: { broken: boolean; frozen?: boolean }) {
+function RisingEmbers({ active }: { active: boolean }) {
   const shouldReduceMotion = useReducedMotion()
+  const embers = useMemo(() => {
+    return Array.from({ length: 18 }, (_, index) => ({
+      id: index,
+      x: ((index * 37) % 88) - 44,
+      y: -68 - ((index * 29) % 58),
+      size: 2 + (index % 3) * 0.7,
+      delay: (index % 9) * 0.16,
+      duration: 1.45 + (index % 4) * 0.18,
+      color: emberColors[index % emberColors.length],
+    }))
+  }, [])
+
+  if (shouldReduceMotion || !active) return null
 
   return (
-    <div style={{ position: "relative", width: 172, height: 176, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <motion.svg
-        viewBox="0 0 160 180"
-        width="160"
-        height="180"
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible" }}>
+      {embers.map((ember) => (
+        <motion.span
+          key={ember.id}
+          initial={{ opacity: 0, x: 0, y: 14, scale: 0.55 }}
+          animate={{
+            opacity: [0, 0.95, 0.5, 0],
+            x: ember.x,
+            y: ember.y,
+            scale: [0.55, 1, 0.78],
+          }}
+          transition={{
+            duration: ember.duration,
+            delay: ember.delay,
+            repeat: Infinity,
+            repeatDelay: 0.5,
+            ease: "easeOut",
+          }}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "54%",
+            width: ember.size,
+            height: ember.size,
+            borderRadius: "50%",
+            background: ember.color,
+            boxShadow: `0 0 12px ${ember.color}`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function FireBurst({ broken, frozen }: { broken: boolean; frozen?: boolean }) {
+  const shouldReduceMotion = useReducedMotion()
+  const active = !broken && !frozen
+  const flameFilter = broken
+    ? "grayscale(0.85) saturate(0.45) brightness(0.72)"
+    : frozen
+      ? "saturate(0.72) hue-rotate(118deg) brightness(1.12)"
+      : "saturate(1.08) brightness(1.04)"
+
+  return (
+    <div style={{ position: "relative", width: 184, height: 190, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <motion.div
         aria-hidden="true"
-        initial={{ scale: 0.48, opacity: 0, y: 22 }}
+        animate={{
+          opacity: broken ? [0.18, 0.04] : frozen ? [0.22, 0.48, 0.26] : [0.32, 0.64, 0.36],
+          scale: broken ? [1, 0.78] : [0.92, 1.08, 0.96],
+        }}
+        transition={{ duration: broken ? 0.9 : 1.8, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          width: 176,
+          height: 176,
+          borderRadius: "50%",
+          background: frozen
+            ? "radial-gradient(circle, rgba(163,237,255,0.52), rgba(107,191,184,0.16) 45%, transparent 72%)"
+            : "radial-gradient(circle, rgba(255,205,86,0.52), rgba(255,92,46,0.2) 48%, transparent 72%)",
+          filter: "blur(10px)",
+        }}
+      />
+
+      <motion.div
+        key={broken ? "broken" : frozen ? "frozen" : "active"}
+        initial={{ opacity: 0, y: 28, scale: 0.5, rotate: -7 }}
         animate={broken
-          ? { scale: [0.48, 1.1, 0.8], opacity: [0, 1, 0.46], y: [22, 0, 0], rotate: [0, -5, 4] }
-          : { scale: shouldReduceMotion ? 1 : [0.48, 1.16, 1], opacity: 1, y: 0, rotate: shouldReduceMotion ? 0 : [0, -1.5, 1.5, 0] }}
+          ? {
+              opacity: [0, 1, 0.36],
+              y: [28, 0, 10],
+              x: [0, 8, 18],
+              scale: [0.5, 1.04, 0.68],
+              rotate: [-7, 4, 12],
+            }
+          : {
+              opacity: 1,
+              y: shouldReduceMotion ? 0 : [0, -4, 0, -2, 0],
+              scale: shouldReduceMotion ? 1 : [0.58, 1.12, 0.98, 1],
+              rotate: shouldReduceMotion ? 0 : [-4, 2, -1, 0],
+            }}
         transition={broken
-          ? { duration: 1.15, ease: "easeOut" }
-          : { duration: shouldReduceMotion ? 0.25 : 1.35, ease: [0.16, 1, 0.3, 1] }}
+          ? { duration: 1.15, ease: [0.16, 1, 0.3, 1] }
+          : { duration: shouldReduceMotion ? 0.22 : 1.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: "relative",
+          zIndex: 2,
+          filter: flameFilter,
+          willChange: "transform, opacity, filter",
+        }}
       >
-        <defs>
-          <radialGradient id="streakGlow" cx="50%" cy="58%" r="48%">
-            <stop offset="0%" stopColor={broken ? "rgba(225, 232, 235, 0.42)" : "rgba(255, 185, 73, 0.62)"} />
-            <stop offset="52%" stopColor={broken ? "rgba(170, 180, 184, 0.18)" : "rgba(255, 93, 42, 0.24)"} />
-            <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-          </radialGradient>
-          <linearGradient id="outerFlame" x1="75" y1="24" x2="83" y2="160" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={broken ? "#d3d8da" : "#ffdf63"} />
-            <stop offset="34%" stopColor={broken ? "#aeb8bb" : "#ff8a2f"} />
-            <stop offset="72%" stopColor={broken ? "#6f7a7d" : "#ff3f25"} />
-            <stop offset="100%" stopColor={broken ? "#485155" : "#b6171a"} />
-          </linearGradient>
-          <linearGradient id="innerFlame" x1="82" y1="64" x2="82" y2="149" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={broken ? "#f0f2f2" : "#fff7a6"} />
-            <stop offset="58%" stopColor={broken ? "#bcc4c6" : "#ffd24f"} />
-            <stop offset="100%" stopColor={broken ? "#828d90" : "#ff7a1f"} />
-          </linearGradient>
-          <filter id="flameSoftGlow" x="-35%" y="-35%" width="170%" height="170%">
-            <feGaussianBlur stdDeviation="5.5" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values={broken
-                ? "0.55 0 0 0 0.55 0 0.62 0 0 0.62 0 0 0.7 0 0.7 0 0 0 0.48 0"
-                : "1 0 0 0 1 0 0.45 0 0 0.32 0 0 0.1 0 0 0 0 0 0.72 0"}
-            />
-            <feMerge>
-              <feMergeNode />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <ellipse cx="80" cy="105" rx="62" ry="66" fill="url(#streakGlow)" opacity={broken ? 0.45 : 0.85} />
-
-        <motion.g
-          style={{ transformOrigin: "80px 142px" }}
-          animate={broken || shouldReduceMotion ? { scaleX: 1, scaleY: 1 } : { scaleX: [1, 0.94, 1.06, 1], scaleY: [1, 1.05, 0.97, 1] }}
-          transition={{ duration: 1.05, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-          filter="url(#flameSoftGlow)"
+        <motion.div
+          animate={active && !shouldReduceMotion ? { rotate: [-0.8, 0.9, -0.4], scale: [1, 1.025, 0.99, 1] } : {}}
+          transition={{ duration: 0.94, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "50% 82%" }}
         >
-          <path
-            d="M80 166c-31.5 0-57-22.8-57-55.7 0-22.8 14.1-42.7 30.7-59.1 12.5-12.3 20.6-24.5 19.4-39.2 19.9 9.1 33.1 25.4 36.3 45.3 7-4.5 11.4-11.4 12.9-20.3 15.9 16.2 20.7 34.8 17.4 52.8C134.4 129.5 112.6 166 80 166Z"
-            fill="url(#outerFlame)"
-            opacity={broken ? 0.58 : 1}
-          />
-          <motion.path
-            d="M82 151c-18.6 0-33.3-13.3-33.3-32.4 0-12.5 8.3-24.3 18.3-33.7 7.3-6.9 12.7-16 11.1-27.6 14.2 8.5 22.2 20.7 22.7 34.1 5.3-2.1 9.8-6.5 12.5-12.6 8.1 11.4 10.1 24.1 6.7 36.1-5.3 18.6-19.2 36.1-38 36.1Z"
-            fill="url(#innerFlame)"
-            opacity={broken ? 0.5 : 0.96}
-            style={{ transformOrigin: "82px 145px" }}
-            animate={broken || shouldReduceMotion ? { scale: 1, y: 0 } : { scale: [1, 1.09, 0.98, 1.05], y: [0, -4, 1, -2] }}
-            transition={{ duration: 0.82, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-          />
-          <motion.path
-            d="M58 129c-9.3-12.1-7.1-28.2 6.2-41.5 1.9 9 7.8 14.1 15.7 20.6-13.4 3.6-20 10.8-21.9 20.9Z"
-            fill={broken ? "#a9b2b5" : "#ffd85b"}
-            opacity={broken ? 0.38 : 0.78}
-            animate={broken || shouldReduceMotion ? { opacity: 0.38 } : { opacity: [0.48, 0.92, 0.58] }}
-            transition={{ duration: 0.7, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-          />
-          <motion.path
-            d="M103 132c8.6-13.9 6-30.1-6.5-41.1-0.8 9.3-6.1 15.7-14.1 22.9 12.1 2.8 18.2 9.7 20.6 18.2Z"
-            fill={broken ? "#8f999d" : "#ffb33e"}
-            opacity={broken ? 0.34 : 0.66}
-            animate={broken || shouldReduceMotion ? { opacity: 0.34 } : { opacity: [0.38, 0.78, 0.45] }}
-            transition={{ duration: 0.92, repeat: broken || shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-          />
-        </motion.g>
-      </motion.svg>
+          <FlameIcon size={146} />
+        </motion.div>
+      </motion.div>
+
+      <RisingEmbers active={active} />
 
       {frozen && <FreezeHalo active={frozen} />}
 

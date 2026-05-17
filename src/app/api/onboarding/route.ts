@@ -1,136 +1,146 @@
 import { auth } from "@/lib/auth"
+import { internalError, unauthorized } from "@/lib/apiResponse"
 import { db } from "@/lib/db"
-import { cleanText, clampInt, rateLimitByUser, rateLimitPresets, readJsonBody, requestBodyErrorResponse, safeError, validateSameOrigin } from "@/lib/security"
+import { cleanText, rateLimitByUser, rateLimitPresets, safeError, validateSameOrigin } from "@/lib/security"
+import { cleanStringSchema, parseJsonBody, strictObject, z } from "@/lib/validation"
 import { NextResponse } from "next/server"
 
-const WORKOUT_ENVIRONMENTS = new Set(["home_bodyweight", "home_dumbbells", "gym"])
-const FITNESS_GOALS = new Set(["lose_weight", "build_muscle", "stay_active", "improve_endurance"])
-const EXPERIENCE_LEVELS = new Set(["beginner", "intermediate", "advanced"])
+const workoutEnvironmentSchema = z.enum(["home_bodyweight", "home_dumbbells", "gym"])
+const fitnessGoalSchema = z.enum(["lose_weight", "build_muscle", "stay_active", "improve_endurance"])
+const experienceLevelSchema = z.enum(["beginner", "intermediate", "advanced"])
+
+const onboardingBodySchema = strictObject({
+  heightCm: z.coerce.number().min(50).max(260).optional().nullable(),
+  weightKg: z.coerce.number().min(20).max(400).optional().nullable(),
+  hasInjury: z.boolean().optional().default(false),
+  injuryNotes: cleanStringSchema(500).optional().default(""),
+  workoutEnvironment: workoutEnvironmentSchema.nullable().optional(),
+  fitnessGoal: fitnessGoalSchema.optional().default("stay_active"),
+  experienceLevel: experienceLevelSchema.optional().default("beginner"),
+  workoutsPerWeek: z.coerce.number().int().min(1).max(6).optional().default(3),
+})
+
+const onboardingPatchBodySchema = strictObject({
+  workoutEnvironment: workoutEnvironmentSchema,
+})
 
 function parseWorkoutEnvironment(value: unknown) {
-  return typeof value === "string" && WORKOUT_ENVIRONMENTS.has(value) ? value : null
+  return typeof value === "string" && workoutEnvironmentSchema.safeParse(value).success ? value : null
 }
 
 export async function POST(req: Request) {
-  const originError = validateSameOrigin(req)
-  if (originError) return originError
-
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "onboarding:post")
-  if (limited) return limited
-
-  let body: any
   try {
-    body = await readJsonBody(req)
+    const originError = validateSameOrigin(req)
+    if (originError) return originError
+
+    const session = await auth()
+    if (!session?.user?.id) {
+      return unauthorized()
+    }
+    const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "onboarding:post")
+    if (limited) return limited
+
+    const parsedBody = await parseJsonBody(req, onboardingBodySchema)
+    if (parsedBody.response) return parsedBody.response
+
+    const body = parsedBody.data
+    const heightCm = body.heightCm ?? null
+    const weightKg = body.weightKg ?? null
+    const bmi = heightCm && weightKg
+      ? Math.round((weightKg / ((heightCm / 100) ** 2)) * 10) / 10
+      : null
+
+    await db.user.update({
+      where: { id: session.user.id },
+      data: {
+        fitnessGoal: body.fitnessGoal,
+        experienceLevel: body.experienceLevel,
+        workoutsPerWeek: body.workoutsPerWeek,
+        workoutEnvironment: body.workoutEnvironment ?? null,
+        heightCm,
+        weightKg,
+        bmi,
+        hasInjury: body.hasInjury,
+        injuryNotes: body.hasInjury ? cleanText(body.injuryNotes, 500) : null,
+        onboardingCompleted: true,
+      },
+    })
+
+    return NextResponse.json({ success: true })
   } catch (error) {
-    const bodyError = requestBodyErrorResponse(error)
-    if (bodyError) return bodyError
-    return safeError("Invalid request")
+    return internalError(error, { route: "onboarding:post" }, "Failed to save onboarding")
   }
-  const heightCmRaw = Number(body.heightCm)
-  const weightKgRaw = Number(body.weightKg)
-  const heightCm = Number.isFinite(heightCmRaw) && heightCmRaw >= 50 && heightCmRaw <= 260 ? heightCmRaw : null
-  const weightKg = Number.isFinite(weightKgRaw) && weightKgRaw >= 20 && weightKgRaw <= 400 ? weightKgRaw : null
-  const bmi = heightCm && weightKg
-    ? Math.round((weightKg / ((heightCm / 100) ** 2)) * 10) / 10
-    : null
-  const hasInjury = Boolean(body.hasInjury)
-  const workoutEnvironment = parseWorkoutEnvironment(body.workoutEnvironment)
-  const fitnessGoal = typeof body.fitnessGoal === "string" && FITNESS_GOALS.has(body.fitnessGoal) ? body.fitnessGoal : "stay_active"
-  const experienceLevel = typeof body.experienceLevel === "string" && EXPERIENCE_LEVELS.has(body.experienceLevel) ? body.experienceLevel : "beginner"
-  const workoutsPerWeek = clampInt(body.workoutsPerWeek, 1, 6, 3)
-
-  await db.user.update({
-    where: { id: session.user.id },
-    data: {
-      fitnessGoal,
-      experienceLevel,
-      workoutsPerWeek,
-      workoutEnvironment,
-      heightCm,
-      weightKg,
-      bmi,
-      hasInjury,
-      injuryNotes: hasInjury ? cleanText(body.injuryNotes, 500) : null,
-      onboardingCompleted: true,
-    },
-  })
-
-  return NextResponse.json({ success: true })
 }
 
 export async function PATCH(req: Request) {
-  const originError = validateSameOrigin(req)
-  if (originError) return originError
-
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "onboarding:patch")
-  if (limited) return limited
-
-  let body: any
   try {
-    body = await readJsonBody(req)
-  } catch (error) {
-    const bodyError = requestBodyErrorResponse(error)
-    if (bodyError) return bodyError
-    return safeError("Invalid request")
-  }
-  const data: { workoutEnvironment?: string } = {}
+    const originError = validateSameOrigin(req)
+    if (originError) return originError
 
-  if ("workoutEnvironment" in body) {
-    const workoutEnvironment = parseWorkoutEnvironment(body.workoutEnvironment)
+    const session = await auth()
+    if (!session?.user?.id) {
+      return unauthorized()
+    }
+    const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "onboarding:patch")
+    if (limited) return limited
+
+    const parsedBody = await parseJsonBody(req, onboardingPatchBodySchema)
+    if (parsedBody.response) return parsedBody.response
+    const data: { workoutEnvironment?: string } = {}
+
+    const workoutEnvironment = parseWorkoutEnvironment(parsedBody.data.workoutEnvironment)
     if (!workoutEnvironment) {
       return safeError("Invalid workout environment")
     }
     data.workoutEnvironment = workoutEnvironment
+
+    const user = await db.user.update({
+      where: { id: session.user.id },
+      data,
+      select: {
+        workoutEnvironment: true,
+      },
+    })
+
+    return NextResponse.json(user ? {
+      ...user,
+      workoutEnvironment: parseWorkoutEnvironment(user.workoutEnvironment) || "gym",
+    } : user)
+  } catch (error) {
+    return internalError(error, { route: "onboarding:patch" }, "Failed to update onboarding")
   }
-
-  const user = await db.user.update({
-    where: { id: session.user.id },
-    data,
-    select: {
-      workoutEnvironment: true,
-    },
-  })
-
-  return NextResponse.json(user ? {
-    ...user,
-    workoutEnvironment: parseWorkoutEnvironment(user.workoutEnvironment) || "gym",
-  } : user)
 }
 
 export async function GET(req: Request) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return unauthorized()
+    }
+    const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "onboarding:get")
+    if (limited) return limited
+
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        onboardingCompleted: true,
+        fitnessGoal: true,
+        experienceLevel: true,
+        workoutsPerWeek: true,
+        workoutEnvironment: true,
+        heightCm: true,
+        weightKg: true,
+        bmi: true,
+        hasInjury: true,
+        injuryNotes: true,
+      },
+    })
+
+    return NextResponse.json(user ? {
+      ...user,
+      workoutEnvironment: parseWorkoutEnvironment(user.workoutEnvironment) || "gym",
+    } : user)
+  } catch (error) {
+    return internalError(error, { route: "onboarding:get" }, "Failed to fetch onboarding")
   }
-  const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "onboarding:get")
-  if (limited) return limited
-
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      onboardingCompleted: true,
-      fitnessGoal: true,
-      experienceLevel: true,
-      workoutsPerWeek: true,
-      workoutEnvironment: true,
-      heightCm: true,
-      weightKg: true,
-      bmi: true,
-      hasInjury: true,
-      injuryNotes: true,
-    },
-  })
-
-  return NextResponse.json(user ? {
-    ...user,
-    workoutEnvironment: parseWorkoutEnvironment(user.workoutEnvironment) || "gym",
-  } : user)
 }

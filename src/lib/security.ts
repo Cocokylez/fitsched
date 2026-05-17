@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { apiError } from "@/lib/apiResponse"
+import { serverEnv } from "@/lib/env"
+import { logger } from "@/lib/logger"
 
 type RateLimitPreset = {
   windowMs: number
@@ -49,6 +51,35 @@ function getClientIp(req: Request) {
     forwardedFor ||
     "unknown"
   )
+}
+
+/**
+ * Builds the trusted browser origins for state-changing API requests.
+ *
+ * @param req - Incoming request used to include the current host.
+ * @returns A set of allowed origin hostnames.
+ */
+function getAllowedOriginHosts(req: Request) {
+  const hosts = new Set<string>()
+  const host = req.headers.get("host")
+  if (host) hosts.add(host)
+
+  for (const rawOrigin of serverEnv.allowedOrigins.split(",").map((origin) => origin.trim()).filter(Boolean)) {
+    try {
+      hosts.add(new URL(rawOrigin).host)
+    } catch {
+      hosts.add(rawOrigin)
+    }
+  }
+
+  for (const rawOrigin of [serverEnv.appUrl, serverEnv.vercelUrl ? `https://${serverEnv.vercelUrl}` : null]) {
+    if (!rawOrigin) continue
+    try {
+      hosts.add(new URL(rawOrigin).host)
+    } catch {}
+  }
+
+  return hosts
 }
 
 /**
@@ -146,7 +177,8 @@ export function validateSameOrigin(req: Request) {
   if (!host) return null
 
   try {
-    if (new URL(origin).host === host) return null
+    const originHost = new URL(origin).host
+    if (originHost === host || getAllowedOriginHosts(req).has(originHost)) return null
   } catch {
     return apiError("Invalid request origin", 403)
   }
@@ -255,5 +287,5 @@ export function safeError(message = "Invalid request", status = 400) {
  * @returns Nothing.
  */
 export function logSecurityEvent(event: string, details: Record<string, unknown> = {}) {
-  console.warn(`[security] ${event}`, details)
+  logger.warn({ event, ...details, timestamp: new Date().toISOString() }, "security event")
 }

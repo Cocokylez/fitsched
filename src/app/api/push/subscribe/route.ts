@@ -1,8 +1,18 @@
 import { auth } from "@/lib/auth";
+import { internalError, unauthorized } from "@/lib/apiResponse";
 import { db } from "@/lib/db";
-import { cleanText, rateLimitByUser, rateLimitPresets, readJsonBody, requestBodyErrorResponse, safeError, validateSameOrigin } from "@/lib/security";
+import { rateLimitByUser, rateLimitPresets, safeError, validateSameOrigin } from "@/lib/security";
+import { cleanStringSchema, parseJsonBody, strictObject, z } from "@/lib/validation";
 import { NextResponse } from "next/server";
 
+const pushSubscriptionSchema = strictObject({
+  endpoint: cleanStringSchema(2_000, 1).refine((value) => value.startsWith("https://")),
+  expirationTime: z.union([z.number(), z.string(), z.null()]).optional(),
+  keys: strictObject({
+    p256dh: cleanStringSchema(256, 1),
+    auth: cleanStringSchema(256, 1),
+  }),
+})
 
 export async function POST(req: Request) {
   try {
@@ -11,19 +21,15 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "push:subscribe");
     if (limited) return limited;
 
-    const subscription = await readJsonBody(req, 16_000);
-    const endpoint = cleanText(subscription.endpoint, 2_000);
-    const p256dh = cleanText(subscription.keys?.p256dh, 256);
-    const authKey = cleanText(subscription.keys?.auth, 256);
-
-    if (!endpoint.startsWith("https://") || !p256dh || !authKey) {
-      return safeError("Invalid push subscription");
-    }
+    const parsedBody = await parseJsonBody(req, pushSubscriptionSchema, 16_000);
+    if (parsedBody.response) return parsedBody.response;
+    const { endpoint, keys } = parsedBody.data;
+    const { p256dh, auth: authKey } = keys;
 
     const existing = await db.pushSubscription.findUnique({
       where: { endpoint },
@@ -50,13 +56,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const bodyError = requestBodyErrorResponse(error);
-    if (bodyError) return bodyError;
-
-    console.error("Push subscription error:", error);
-    return NextResponse.json(
-      { error: "Failed to subscribe" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "push:subscribe" }, "Failed to subscribe");
   }
 }

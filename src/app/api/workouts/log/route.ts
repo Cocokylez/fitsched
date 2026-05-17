@@ -1,7 +1,61 @@
 import { auth } from "@/lib/auth";
+import { internalError, unauthorized } from "@/lib/apiResponse";
 import { db } from "@/lib/db";
-import { cleanText, clampInt, rateLimitByUser, rateLimitPresets, readJsonBody, requestBodyErrorResponse, safeError, validateSameOrigin } from "@/lib/security";
+import { cleanText, clampInt, rateLimitByUser, rateLimitPresets, safeError, validateSameOrigin } from "@/lib/security";
+import { cleanStringSchema, idSchema, optionalCleanStringSchema, parseJsonBody, parseQuery, strictObject, z } from "@/lib/validation";
 import { NextResponse } from "next/server";
+
+const workoutSetSchema = strictObject({
+  reps: z.coerce.number().int().min(1).max(200),
+  weight: z.coerce.number().min(0).max(1000).optional().nullable(),
+  duration: z.coerce.number().int().min(1).max(3600).optional().nullable(),
+  completed: z.boolean().optional().default(true),
+})
+
+const legacyWorkoutLogBodySchema = strictObject({
+  exerciseId: idSchema,
+  date: z.union([z.string(), z.number()]).optional(),
+  sets: z.array(workoutSetSchema).min(1).max(20),
+  duration: z.coerce.number().int().min(1).max(24 * 60).optional().nullable(),
+  notes: optionalCleanStringSchema(500),
+  rating: z.coerce.number().int().min(1).max(5).optional().nullable(),
+})
+
+const legacyWorkoutLogGetQuerySchema = strictObject({
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  exerciseId: idSchema.optional(),
+})
+
+const legacyWorkoutLogSelect = {
+  id: true,
+  date: true,
+  duration: true,
+  notes: true,
+  rating: true,
+  completedAt: true,
+  sets: {
+    select: {
+      id: true,
+      setNumber: true,
+      reps: true,
+      weight: true,
+      duration: true,
+      completed: true,
+    },
+  },
+  exercise: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      muscleGroup: true,
+      equipment: true,
+      difficulty: true,
+      isSystem: true,
+    },
+  },
+} as const
 
 export async function POST(req: Request) {
   try {
@@ -10,18 +64,16 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.write, "legacy-workout-log:post");
     if (limited) return limited;
 
-    const body = await readJsonBody(req);
-    const exerciseId = cleanText(body.exerciseId, 80);
-    const date = new Date(body.date || Date.now());
-    const sets = Array.isArray(body.sets) ? body.sets.slice(0, 20) : [];
-    const duration = body.duration ? clampInt(body.duration, 1, 24 * 60, 30) : null;
-    const notes = cleanText(body.notes, 500) || null;
-    const rating = body.rating ? clampInt(body.rating, 1, 5, 3) : null;
+    const parsedBody = await parseJsonBody(req, legacyWorkoutLogBodySchema);
+    if (parsedBody.response) return parsedBody.response;
+
+    const { exerciseId, sets, duration, notes, rating } = parsedBody.data;
+    const date = new Date(parsedBody.data.date || Date.now());
 
     if (!exerciseId || Number.isNaN(date.getTime()) || sets.length === 0) {
       return safeError("Missing or invalid workout log fields");
@@ -46,31 +98,21 @@ export async function POST(req: Request) {
         notes,
         rating,
         sets: {
-          create: sets.map((s: any, i: number) => ({
+          create: sets.map((s, i: number) => ({
             setNumber: i + 1,
-            reps: clampInt(s.reps, 1, 200, 10),
-            weight: Number.isFinite(Number(s.weight)) ? Math.max(0, Math.min(1000, Number(s.weight))) : null,
-            duration: s.duration ? clampInt(s.duration, 1, 3600, 60) : null,
+            reps: s.reps,
+            weight: s.weight ?? null,
+            duration: s.duration ?? null,
             completed: s.completed !== false,
           })),
         },
       },
-      include: {
-        sets: true,
-        exercise: true,
-      },
+      select: legacyWorkoutLogSelect,
     });
 
     return NextResponse.json(log);
   } catch (error) {
-    const bodyError = requestBodyErrorResponse(error);
-    if (bodyError) return bodyError;
-
-    console.error("Workout log error:", error);
-    return NextResponse.json(
-      { error: "Failed to log workout" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "legacy-workout-log:post" }, "Failed to log workout");
   }
 }
 
@@ -78,15 +120,15 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "legacy-workout-log:get");
     if (limited) return limited;
 
-    const { searchParams } = new URL(req.url);
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const exerciseId = searchParams.get("exerciseId");
+    const parsedQuery = parseQuery(req, legacyWorkoutLogGetQuerySchema);
+    if (parsedQuery.response) return parsedQuery.response;
+
+    const { startDate, endDate, exerciseId } = parsedQuery.data;
 
     const where: any = { userId: session.user.id };
     if (startDate) {
@@ -103,19 +145,13 @@ export async function GET(req: Request) {
 
     const logs = await db.workoutLog.findMany({
       where,
-      include: {
-        sets: true,
-        exercise: true,
-      },
+      select: legacyWorkoutLogSelect,
       orderBy: { date: "desc" },
       take: 100,
     });
 
     return NextResponse.json(logs);
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch logs" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "legacy-workout-log:get" }, "Failed to fetch logs");
   }
 }

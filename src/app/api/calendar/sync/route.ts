@@ -1,9 +1,25 @@
 import { auth } from "@/lib/auth";
+import { internalError, unauthorized } from "@/lib/apiResponse";
 import { db } from "@/lib/db";
 import { decryptSecret } from "@/lib/fieldEncryption";
+import { serverEnv } from "@/lib/env";
 import { rateLimitByUser, rateLimitPresets, validateSameOrigin } from "@/lib/security";
+import { parseQuery, strictObject, z } from "@/lib/validation";
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
+
+const calendarGetQuerySchema = strictObject({
+  date: z.string().refine((value) => !Number.isNaN(new Date(value).getTime())).optional(),
+})
+
+const calendarEventSelect = {
+  id: true,
+  summary: true,
+  startTime: true,
+  endTime: true,
+  isAllDay: true,
+  syncedAt: true,
+} as const
 
 export async function POST(req: Request) {
   try {
@@ -12,12 +28,12 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.strictWrite, "calendar:sync");
     if (limited) return limited;
 
-    if (!process.env.GOOGLE_CALENDAR_CLIENT_ID || !process.env.GOOGLE_CALENDAR_CLIENT_SECRET) {
+    if (!serverEnv.googleCalendarClientId || !serverEnv.googleCalendarClientSecret) {
       return NextResponse.json({ error: "Calendar integration is not configured" }, { status: 503 });
     }
 
@@ -33,8 +49,8 @@ export async function POST(req: Request) {
     }
 
     const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CALENDAR_CLIENT_ID,
-      process.env.GOOGLE_CALENDAR_CLIENT_SECRET
+      serverEnv.googleCalendarClientId,
+      serverEnv.googleCalendarClientSecret
     );
 
     oauth2Client.setCredentials({
@@ -99,7 +115,6 @@ export async function POST(req: Request) {
       count: events.length,
     });
   } catch (error: any) {
-    console.error("Calendar sync error:", error);
 
     if (error?.response?.status === 401) {
       return NextResponse.json(
@@ -108,10 +123,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json(
-      { error: "Failed to sync calendar" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "calendar:sync" }, "Failed to sync calendar");
   }
 }
 
@@ -122,7 +134,7 @@ export async function DELETE(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.strictWrite, "calendar:disconnect");
     if (limited) return limited;
@@ -133,10 +145,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to disconnect" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "calendar:disconnect" }, "Failed to disconnect");
   }
 }
 
@@ -144,16 +153,14 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "calendar:get");
     if (limited) return limited;
 
-    const { searchParams } = new URL(req.url);
-    const date = searchParams.get("date");
-    if (date && Number.isNaN(new Date(date).getTime())) {
-      return NextResponse.json({ error: "Invalid date" }, { status: 400 });
-    }
+    const parsedQuery = parseQuery(req, calendarGetQuerySchema);
+    if (parsedQuery.response) return parsedQuery.response;
+    const { date } = parsedQuery.data;
 
     const connection = await db.calendarConnection.findFirst({
       where: { userId: session.user.id },
@@ -166,9 +173,11 @@ export async function GET(req: Request) {
                   lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
                 },
               },
+              select: calendarEventSelect,
               orderBy: { startTime: "asc" },
             }
           : {
+              select: calendarEventSelect,
               orderBy: { startTime: "asc" },
               take: 50,
             },
@@ -181,9 +190,6 @@ export async function GET(req: Request) {
       lastSyncedAt: connection?.lastSyncedAt,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch calendar" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "calendar:get" }, "Failed to fetch calendar");
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { logError } from "@/lib/logger"
 
 export type ApiResponse<T> = {
   success: boolean
@@ -40,4 +41,26 @@ export function apiError(error = "Invalid request", status = 400) {
     },
     { status },
   )
+}
+
+/**
+ * Creates a standard unauthorized response.
+ *
+ * @returns A 401 API error response.
+ */
+export function unauthorized() {
+  return apiError("Unauthorized", 401)
+}
+
+/**
+ * Logs an internal error and returns a safe public response.
+ *
+ * @param error - Unknown error thrown by backend code.
+ * @param context - Non-sensitive metadata about the failed route.
+ * @param message - Development-friendly error message.
+ * @returns A 500 API error response.
+ */
+export function internalError(error: unknown, context: Record<string, unknown>, message = "Something went wrong") {
+  logError(error, context)
+  return apiError(process.env.NODE_ENV === "production" ? "Something went wrong" : message, 500)
 }

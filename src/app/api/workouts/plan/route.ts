@@ -1,7 +1,10 @@
 import { auth } from "@/lib/auth";
+import { internalError, unauthorized } from "@/lib/apiResponse";
 import { db } from "@/lib/db";
-import { cleanText, clampInt, rateLimitByUser, rateLimitPresets, readJsonBody, requestBodyErrorResponse, validateSameOrigin } from "@/lib/security";
+import { serverEnv } from "@/lib/env";
+import { cleanText, clampInt, rateLimitByUser, rateLimitPresets, validateSameOrigin } from "@/lib/security";
 import { ensureSystemExercises, getAllowedEquipmentForEnvironment } from "@/lib/systemExercises";
+import { optionalCleanStringSchema, parseJsonBody, parseQuery, strictObject, z } from "@/lib/validation";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
@@ -15,8 +18,60 @@ type NormalizedPlanExercise = {
   order: number;
 };
 
+const workoutPlanBodySchema = strictObject({
+  name: optionalCleanStringSchema(100),
+  prompt: optionalCleanStringSchema(2_000),
+  goal: optionalCleanStringSchema(80),
+  startDate: z.union([z.string(), z.number()]).optional(),
+  endDate: z.union([z.string(), z.number()]).optional().nullable(),
+})
+
+const workoutPlanSelect = {
+  id: true,
+  name: true,
+  description: true,
+  startDate: true,
+  endDate: true,
+  isAIGenerated: true,
+  createdAt: true,
+  updatedAt: true,
+  days: {
+    select: {
+      id: true,
+      dayOfWeek: true,
+      muscleGroup: true,
+      order: true,
+      scheduledTime: true,
+      notes: true,
+      exercises: {
+        select: {
+          id: true,
+          sets: true,
+          reps: true,
+          duration: true,
+          restSeconds: true,
+          order: true,
+          notes: true,
+          exercise: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              muscleGroup: true,
+              equipment: true,
+              difficulty: true,
+              isSystem: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { order: "asc" as const },
+  },
+} as const
+
 function getModel() {
-  const key = process.env.GOOGLE_API_KEY;
+  const key = serverEnv.googleApiKey;
   if (!key) return null;
   const genAI = new GoogleGenerativeAI(key);
   return genAI.getGenerativeModel({
@@ -52,17 +107,17 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.expensive, "workouts-plan:post");
     if (limited) return limited;
 
-    const body = await readJsonBody(req, 12_000);
-    const name = cleanText(body.name, 100);
-    const prompt = cleanText(body.prompt, 2_000);
-    const goal = cleanText(body.goal, 80);
-    const startDate = body.startDate;
-    const endDate = body.endDate;
+    const parsedBody = await parseJsonBody(req, workoutPlanBodySchema, 12_000);
+    if (parsedBody.response) return parsedBody.response;
+    const { startDate, endDate } = parsedBody.data;
+    const name = parsedBody.data.name || "";
+    const prompt = parsedBody.data.prompt || "";
+    const goal = parsedBody.data.goal || "";
     const user = await db.user.findUnique({
       where: { id: session.user.id },
       select: { workoutEnvironment: true },
@@ -221,30 +276,12 @@ Return ONLY valid JSON with this structure:
 
     const fullPlan = await db.workoutPlan.findUnique({
       where: { id: createdPlan.id },
-      include: {
-        days: {
-          include: {
-            exercises: {
-              include: {
-                exercise: true,
-              },
-            },
-          },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: workoutPlanSelect,
     });
 
     return NextResponse.json(fullPlan);
   } catch (error) {
-    const bodyError = requestBodyErrorResponse(error);
-    if (bodyError) return bodyError;
-
-    console.error("Workout plan error:", error);
-    return NextResponse.json(
-      { error: "Failed to generate plan" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "workouts-plan:post" }, "Failed to generate plan");
   }
 }
 
@@ -252,33 +289,22 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "workouts-plan:get");
     if (limited) return limited;
 
+    const parsedQuery = parseQuery(req, strictObject({}));
+    if (parsedQuery.response) return parsedQuery.response;
+
     const plans = await db.workoutPlan.findMany({
       where: { userId: session.user.id },
-      include: {
-        days: {
-          include: {
-            exercises: {
-              include: {
-                exercise: true,
-              },
-            },
-          },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: workoutPlanSelect,
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(plans);
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch plans" },
-      { status: 500 }
-    );
+    return internalError(error, { route: "workouts-plan:get" }, "Failed to fetch plans");
   }
 }

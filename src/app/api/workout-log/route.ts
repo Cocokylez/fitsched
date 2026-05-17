@@ -1,14 +1,40 @@
 import { auth } from "@/lib/auth"
+import { internalError, unauthorized } from "@/lib/apiResponse"
 import { db } from "@/lib/db"
 import { awardFitTokensForWorkoutLogTx } from "@/lib/fitTokens"
-import { cleanText, clampInt, isDateId, rateLimitByUser, rateLimitPresets, readJsonBody, requestBodyErrorResponse, safeError, validateSameOrigin } from "@/lib/security"
+import { serverEnv } from "@/lib/env"
+import { rateLimitByUser, rateLimitPresets, safeError, validateSameOrigin } from "@/lib/security"
+import { cleanStringSchema, dateIdSchema, parseJsonBody, parseQuery, strictObject, z } from "@/lib/validation"
 import { Prisma } from "@prisma/client"
 import { NextResponse } from "next/server"
 
+const completedExerciseSchema = strictObject({
+  name: cleanStringSchema(100, 1),
+  sets: z.coerce.number().int().min(1).max(10).default(3),
+  reps: z.coerce.number().int().min(1).max(200).default(12),
+})
+
+const workoutLogBodySchema = strictObject({
+  date: dateIdSchema,
+  workoutName: cleanStringSchema(100, 1),
+  exercises: z.array(completedExerciseSchema).min(1).max(20),
+})
+
+const workoutLogGetQuerySchema = strictObject({
+  date: dateIdSchema.optional(),
+})
+
+const workoutSessionLogSelect = {
+  id: true,
+  date: true,
+  workoutName: true,
+  exercises: true,
+  completedAt: true,
+} as const
+
 function getTodayDateId() {
-  const timeZone = process.env.FITSCHED_TIME_ZONE || "Asia/Singapore"
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
+    timeZone: serverEnv.timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -25,45 +51,32 @@ function isSerializableConflict(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034"
 }
 
-function normalizeCompletedExercises(value: unknown) {
-  if (!Array.isArray(value) || value.length === 0 || value.length > 20) return null
-
-  return value.map((exercise) => ({
-    name: cleanText((exercise as any)?.name, 100),
-    sets: clampInt((exercise as any)?.sets, 1, 10, 3),
-    reps: clampInt((exercise as any)?.reps, 1, 200, 12),
-  })).filter((exercise) => exercise.name)
-}
-
 export async function GET(req: Request) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return unauthorized()
     }
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.read, "workout-log:get")
     if (limited) return limited
 
-    const { searchParams } = new URL(req.url)
-    const date = searchParams.get("date")
-    if (date && !isDateId(date)) return safeError("Invalid date")
+    const parsedQuery = parseQuery(req, workoutLogGetQuerySchema)
+    if (parsedQuery.response) return parsedQuery.response
+    const { date } = parsedQuery.data
 
     const logs = await db.workoutSessionLog.findMany({
       where: {
         userId: session.user.id,
         ...(date ? { date } : {}),
       },
+      select: workoutSessionLogSelect,
       orderBy: { completedAt: "desc" },
       take: date ? 10 : 365,
     })
 
     return NextResponse.json(logs)
   } catch (error) {
-    console.error("Workout log GET error:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch workout logs" },
-      { status: 500 }
-    )
+    return internalError(error, { route: "workout-log:get" }, "Failed to fetch workout logs")
   }
 }
 
@@ -74,20 +87,15 @@ export async function POST(req: Request) {
 
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return unauthorized()
     }
     const userId = session.user.id
     const limited = rateLimitByUser(req, userId, rateLimitPresets.strictWrite, "workout-log:post")
     if (limited) return limited
 
-    const body = await readJsonBody(req)
-    const date = body.date
-    const workoutName = cleanText(body.workoutName, 100)
-    const exercises = normalizeCompletedExercises(body.exercises)
-
-    if (!isDateId(date) || !workoutName || !exercises?.length) {
-      return safeError("Missing or invalid workout log fields")
-    }
+    const parsedBody = await parseJsonBody(req, workoutLogBodySchema)
+    if (parsedBody.response) return parsedBody.response
+    const { date, workoutName, exercises } = parsedBody.data
 
     if (date !== getTodayDateId()) {
       return NextResponse.json(
@@ -102,6 +110,7 @@ export async function POST(req: Request) {
           userId,
           date,
         },
+        select: workoutSessionLogSelect,
         orderBy: { completedAt: "desc" },
       })
 
@@ -125,6 +134,7 @@ export async function POST(req: Request) {
           workoutName,
           exercises,
         },
+        select: workoutSessionLogSelect,
       })
 
       const reward = await awardFitTokensForWorkoutLogTx(
@@ -151,9 +161,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ...result.log, fitTokenReward: result.fitTokenReward }, { status: 201 })
   } catch (error) {
-    const bodyError = requestBodyErrorResponse(error)
-    if (bodyError) return bodyError
-
     if (isSerializableConflict(error)) {
       return NextResponse.json(
         { error: "Workout completion is already being processed", alreadyCompleted: true },
@@ -161,10 +168,6 @@ export async function POST(req: Request) {
       )
     }
 
-    console.error("Workout log POST error:", error)
-    return NextResponse.json(
-      { error: "Failed to save workout log" },
-      { status: 500 }
-    )
+    return internalError(error, { route: "workout-log:post" }, "Failed to save workout log")
   }
 }

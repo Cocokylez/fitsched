@@ -1,9 +1,23 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { encryptSecret } from "@/lib/fieldEncryption";
+import { serverEnv } from "@/lib/env";
 import { rateLimitByUser, rateLimitPresets } from "@/lib/security";
+import { cleanStringSchema, parseQuery, strictObject } from "@/lib/validation";
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
+import { logError } from "@/lib/logger";
+
+const calendarCallbackQuerySchema = strictObject({
+  code: cleanStringSchema(4_000, 1),
+  state: cleanStringSchema(128, 1),
+  scope: cleanStringSchema(2_000).optional(),
+  authuser: cleanStringSchema(20).optional(),
+  prompt: cleanStringSchema(80).optional(),
+  hd: cleanStringSchema(255).optional(),
+  error: cleanStringSchema(255).optional(),
+  error_description: cleanStringSchema(1_000).optional(),
+})
 
 export async function GET(req: Request) {
   try {
@@ -15,9 +29,9 @@ export async function GET(req: Request) {
     const limited = rateLimitByUser(req, session.user.id, rateLimitPresets.strictWrite, "calendar:callback");
     if (limited) return limited;
 
-    const { searchParams } = new URL(req.url);
-    const code = searchParams.get("code");
-    const state = searchParams.get("state");
+    const parsedQuery = parseQuery(req, calendarCallbackQuerySchema);
+    const code = parsedQuery.data?.code;
+    const state = parsedQuery.data?.state;
     const storedState = req.headers
       .get("cookie")
       ?.split(";")
@@ -27,19 +41,19 @@ export async function GET(req: Request) {
 
     const origin = new URL(req.url).origin;
 
-    if (!code || !state || !storedState || state !== decodeURIComponent(storedState)) {
+    if (parsedQuery.response || !code || !state || !storedState || state !== decodeURIComponent(storedState)) {
       return NextResponse.redirect(
         `${origin}/settings?error=invalid_state`
       );
     }
 
-    if (!process.env.GOOGLE_CALENDAR_CLIENT_ID || !process.env.GOOGLE_CALENDAR_CLIENT_SECRET) {
+    if (!serverEnv.googleCalendarClientId || !serverEnv.googleCalendarClientSecret) {
       return NextResponse.redirect(`${origin}/settings?error=calendar_not_configured`);
     }
 
     const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CALENDAR_CLIENT_ID,
-      process.env.GOOGLE_CALENDAR_CLIENT_SECRET,
+      serverEnv.googleCalendarClientId,
+      serverEnv.googleCalendarClientSecret,
       `${origin}/api/calendar/callback`
     );
 
@@ -83,7 +97,7 @@ export async function GET(req: Request) {
 
     return response;
   } catch (error) {
-    console.error("Calendar callback error:", error);
+    logError(error, { route: "calendar:callback" });
     const origin = new URL(req.url).origin;
     return NextResponse.redirect(
       `${origin}/settings?error=auth_failed`
