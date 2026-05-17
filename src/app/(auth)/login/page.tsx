@@ -52,25 +52,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-[var(--bg)] px-4 pb-8 pt-3">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(107,191,184,0.14),transparent_34%)]" />
+    <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-[var(--bg)] px-4 pb-9 pt-3">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(107,191,184,0.2),transparent_36%),linear-gradient(180deg,transparent,rgba(107,191,184,0.035))]" />
       <AuthTopControls />
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative flex min-h-[270px] flex-col items-center justify-center pt-12"
+        className="relative mx-auto flex min-h-[292px] w-full max-w-[460px] flex-col items-center justify-center pt-14 text-center"
       >
-        <div className="brand-wordmark text-[35px] font-black leading-none text-[var(--text)]">{t.fitSched}</div>
-        <div className="mt-1.5 text-[13px] text-[var(--text-muted)]">{t.tagline}</div>
+        <div className="mb-4 h-px w-14 bg-[var(--accent)] opacity-70" />
+        <div className="brand-wordmark text-[42px] font-black leading-[0.92] text-[var(--text)]">{t.fitSched}</div>
+        <div className="mt-3 max-w-[250px] text-[13px] font-semibold leading-relaxed text-[var(--text-muted)]">{t.tagline}</div>
       </motion.div>
 
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut', delay: 0.15 }}
-        className="relative z-[2] mx-auto -mt-10 w-full max-w-[440px] rounded-[30px] border border-[var(--border)] bg-[var(--panel)] px-5 pb-8 pt-7 shadow-[var(--shadow-lg)] backdrop-blur-[24px] sm:px-6 sm:pb-10 sm:pt-8"
+        className="relative z-[2] mx-auto -mt-12 w-full max-w-[430px] rounded-[34px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),transparent_46%),var(--panel)] px-5 pb-8 pt-7 shadow-[var(--shadow-lg)] sm:px-6 sm:pb-9 sm:pt-8"
       >
         <motion.div
           initial="hidden"
@@ -78,8 +79,8 @@ export default function LoginPage() {
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
         >
           <motion.div variants={fadeIn}>
-            <div className="display-text mb-1 text-2xl font-extrabold text-[var(--text)]">{t.welcomeBack}</div>
-            <div className="mb-6 text-[13px] text-[var(--text-muted)]">{t.signInContinue}</div>
+            <div className="display-text mb-1 text-[25px] font-black leading-none text-[var(--text)]">{t.welcomeBack}</div>
+            <div className="mb-6 text-[13px] font-medium text-[var(--text-muted)]">{t.signInContinue}</div>
           </motion.div>
 
           <form onSubmit={handleSubmit}>
@@ -101,7 +102,7 @@ export default function LoginPage() {
               required
               autoCapitalize="none"
               autoCorrect="off"
-              className="mb-4 min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none"
+              className="mb-4 min-h-[54px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none focus:border-[var(--border-strong)]"
             />
           </motion.div>
 
@@ -113,7 +114,7 @@ export default function LoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="mb-6 min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none"
+              className="mb-6 min-h-[54px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] outline-none focus:border-[var(--border-strong)]"
             />
           </motion.div>
 
@@ -121,7 +122,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`motion-lift mb-5 min-h-[52px] w-full cursor-pointer rounded-2xl border-0 bg-[var(--text)] px-4 text-[15px] font-extrabold text-[var(--bg)] ${
+              className={`motion-lift mb-5 min-h-[54px] w-full cursor-pointer rounded-[18px] border-0 bg-[var(--text)] px-4 text-[15px] font-black text-[var(--bg)] ${
                 loading ? "opacity-55" : "opacity-100"
               }`}
             >
