@@ -47,20 +47,13 @@ export function DashboardNav() {
   const currentIndex = navItems.findIndex((item) => pathname.startsWith(item.href))
   const [travelIndex, setTravelIndex] = useState(Math.max(currentIndex, 0))
   const activeIndex = currentIndex >= 0 ? travelIndex : -1
+  const navThemeClass = theme === "dark"
+    ? "border-[rgba(255,255,255,0.08)] bg-[rgba(19,23,22,0.74)] shadow-[0_18px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.05)]"
+    : "border-[rgba(17,24,22,0.09)] bg-[rgba(255,255,255,0.76)] shadow-[0_18px_44px_rgba(22,32,30,0.12),inset_0_1px_0_rgba(255,255,255,0.75)]"
 
   useEffect(() => {
     if (currentIndex >= 0) setTravelIndex(currentIndex)
   }, [currentIndex])
-
-  const navStyle = theme === "dark" ? {
-    background: "rgba(19, 23, 22, 0.74)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    boxShadow: "0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255,255,255,0.05)",
-  } : {
-    background: "rgba(255, 255, 255, 0.76)",
-    border: "1px solid rgba(17, 24, 22, 0.09)",
-    boxShadow: "0 18px 44px rgba(22, 32, 30, 0.12), inset 0 1px 0 rgba(255,255,255,0.75)",
-  }
 
   useEffect(() => {
     if (hideNav) {
@@ -132,52 +125,16 @@ export function DashboardNav() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 76, opacity: 0 }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            position: "fixed",
-            bottom: "max(14px, env(safe-area-inset-bottom))",
-            left: 0,
-            right: 0,
-            zIndex: 70,
-            padding: "0 14px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            pointerEvents: "none",
-          }}
+          className="pointer-events-none fixed inset-x-0 bottom-[max(14px,env(safe-area-inset-bottom))] z-[70] flex items-center justify-center px-3.5"
         >
-          <div className="dashboard-nav-shell" style={{
-            ...navStyle,
-            position: "relative",
-            display: "grid",
-            gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))`,
-            alignItems: "center",
-            width: "100%",
-            maxWidth: "430px",
-            borderRadius: "28px",
-            padding: "6px",
-            backdropFilter: "blur(22px)",
-            WebkitBackdropFilter: "blur(22px)",
-            pointerEvents: "auto",
-            overflow: "hidden",
-          }}>
+          <div className={`dashboard-nav-shell pointer-events-auto relative grid w-full max-w-[430px] grid-cols-4 items-center overflow-hidden rounded-[28px] border p-1.5 backdrop-blur-[22px] ${navThemeClass}`}>
             {activeIndex >= 0 && (
               <motion.span
                 aria-hidden="true"
                 initial={false}
                 animate={{ x: `${activeIndex * 100}%` }}
                 transition={{ type: "spring", stiffness: 250, damping: 25, mass: 0.78 }}
-                style={{
-                  position: "absolute",
-                  top: 6,
-                  bottom: 6,
-                  left: 6,
-                  width: `calc((100% - 12px) / ${navItems.length})`,
-                  borderRadius: "20px",
-                  background: "linear-gradient(180deg, rgba(107,191,184,0.2), rgba(107,191,184,0.08))",
-                  border: "1px solid rgba(107,191,184,0.25)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 28px rgba(107,191,184,0.12)",
-                  pointerEvents: "none",
-                }}
+                className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-12px)/4)] rounded-[20px] border border-[rgba(107,191,184,0.25)] bg-[linear-gradient(180deg,rgba(107,191,184,0.2),rgba(107,191,184,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(107,191,184,0.12)]"
               />
             )}
             {navItems.map((item, index) => {
@@ -193,41 +150,18 @@ export function DashboardNav() {
                   }}
                   whileTap={{ scale: 0.96 }}
                   animate={{ y: isActive ? -1 : 0 }}
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "3px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    minWidth: 0,
-                    minHeight: 54,
-                    padding: "7px 8px",
-                    borderRadius: "22px",
-                    color: isActive ? "var(--text)" : "var(--text-muted)",
-                    overflow: "hidden",
-                  }}
+                  className={`relative z-[1] flex min-h-[54px] min-w-0 cursor-pointer flex-col items-center justify-center gap-[3px] overflow-hidden rounded-[22px] border-0 bg-transparent px-2 py-[7px] ${
+                    isActive ? "text-[var(--text)]" : "text-[var(--text-muted)]"
+                  }`}
                 >
                   <motion.span
                     animate={{ scale: isActive ? 1.08 : 1 }}
                     transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                    style={{ position: "relative", display: "flex", color: isActive ? "var(--accent-strong)" : "var(--text-muted)" }}
+                    className={`relative flex ${isActive ? "text-[var(--accent-strong)]" : "text-[var(--text-muted)]"}`}
                   >
                     {item.icon}
                   </motion.span>
-                  <span style={{
-                    position: "relative",
-                    fontFamily: "var(--font-display)",
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                    letterSpacing: "0",
-                    color: isActive ? "var(--text)" : "var(--text-muted)",
-                  }}>
+                  <span className={`relative font-[var(--font-display)] text-[10px] font-extrabold leading-none tracking-normal ${isActive ? "text-[var(--text)]" : "text-[var(--text-muted)]"}`}>
                     {t[item.id as keyof typeof t] as string}
                   </span>
                 </motion.button>

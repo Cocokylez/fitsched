@@ -137,28 +137,15 @@ export function AuthGoogleButton({
       type="button"
       onClick={startGooglePopup}
       disabled={waiting || checkingGoogle || !googleAvailable}
-      style={{
-        width: "100%",
-        background: "var(--surface-2)",
-        border: "1px solid var(--border)",
-        borderRadius: "12px",
-        padding: "14px",
-        color: "var(--text)",
-        fontSize: "14px",
-        cursor: waiting || checkingGoogle || !googleAvailable ? "default" : "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "8px",
-        marginBottom: "24px",
-        opacity: waiting || checkingGoogle || !googleAvailable ? 0.7 : 1,
-      }}
+      className={`mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5 text-sm text-[var(--text)] ${
+        waiting || checkingGoogle || !googleAvailable ? "cursor-default opacity-70" : "cursor-pointer opacity-100"
+      }`}
     >
       <Image src="/google.svg" width={16} height={16} alt="Google" />
       {checkingGoogle ? "Checking Google..." : !googleAvailable ? "Google sign in unavailable" : waiting ? "Waiting for Google..." : label}
     </button>
     {error && (
-      <div style={{ color: "#ff6666", fontSize: "12px", textAlign: "center", marginTop: "-14px", marginBottom: "16px" }}>
+      <div className="-mt-3.5 mb-4 text-center text-xs text-[#ff6666]">
         {error}
       </div>
     )}

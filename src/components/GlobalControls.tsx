@@ -30,32 +30,11 @@ export function GlobalControls() {
   }, [])
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 16,
-        right: 16,
-        display: "flex",
-        gap: "8px",
-        alignItems: "center",
-        zIndex: 9999,
-      }}
-    >
-      <div ref={langRef} style={{ position: "relative" }}>
+    <div className="fixed right-4 top-4 z-[9999] flex items-center gap-2">
+      <div ref={langRef} className="relative">
         <button
           onClick={() => setLangOpen(!langOpen)}
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "50%",
-            width: 36,
-            height: 36,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            color: "var(--text)",
-          }}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
         >
           <Globe size={16} />
         </button>
@@ -67,20 +46,7 @@ export function GlobalControls() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -8 }}
               transition={{ duration: 0.15 }}
-              style={{
-                position: "absolute",
-                top: 44,
-                right: 0,
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "16px",
-                padding: "8px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-                minWidth: "120px",
-                zIndex: 9999,
-              }}
+              className="absolute right-0 top-11 z-[9999] flex min-w-[120px] flex-col gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-2"
             >
               {languages.map((lang) => (
                 <button
@@ -89,24 +55,11 @@ export function GlobalControls() {
                     changeLanguage(lang.code as "EN" | "CN" | "JP" | "VI")
                     setLangOpen(false)
                   }}
-                  style={{
-                    background:
-                      language === lang.code
-                        ? "var(--surface-2)"
-                        : "transparent",
-                    border: "none",
-                    borderRadius: "10px",
-                    padding: "8px 12px",
-                    color:
-                      language === lang.code
-                        ? "var(--text)"
-                        : "var(--text-muted)",
-                    fontSize: "12px",
-                    fontWeight: language === lang.code ? "700" : "400",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    width: "100%",
-                  }}
+                  className={`w-full cursor-pointer rounded-[10px] border-0 px-3 py-2 text-left text-xs ${
+                    language === lang.code
+                      ? "bg-[var(--surface-2)] font-bold text-[var(--text)]"
+                      : "bg-transparent font-normal text-[var(--text-muted)]"
+                  }`}
                 >
                   {lang.code} {lang.label}
                 </button>
@@ -118,18 +71,7 @@ export function GlobalControls() {
 
       <button
         onClick={toggleTheme}
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "50%",
-          width: 36,
-          height: 36,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: "var(--text)",
-        }}
+        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
       >
         {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
       </button>

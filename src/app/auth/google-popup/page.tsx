@@ -20,22 +20,9 @@ export default function GooglePopupPage() {
   }, [searchParams])
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "var(--bg)",
-        color: "var(--text)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: "8px",
-        padding: "24px",
-        textAlign: "center",
-      }}
-    >
-      <div style={{ fontSize: "20px", fontWeight: 800 }}>FitSched</div>
-      <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-[var(--bg)] p-6 text-center text-[var(--text)]">
+      <div className="text-xl font-extrabold">FitSched</div>
+      <div className="text-[13px] text-[var(--text-muted)]">
         Opening Google sign in...
       </div>
     </div>

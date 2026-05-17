@@ -43,7 +43,7 @@ export function NativeShell() {
   return (
     <div
       onClick={handleTap}
-      style={{ display: "contents" }}
+      className="contents"
       aria-hidden="true"
     />
   )

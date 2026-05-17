@@ -19,47 +19,20 @@ export function AuthTopControls() {
   const [open, setOpen] = useState(false)
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: "16px",
-        left: "16px",
-        right: "16px",
-        zIndex: 10,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        pointerEvents: "none",
-      }}
-    >
-      <div style={{ position: "relative", pointerEvents: "auto" }}>
+    <div className="pointer-events-none absolute inset-x-4 top-4 z-10 flex items-start justify-between">
+      <div className="pointer-events-auto relative">
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-label="Choose language"
-          style={{
-            minWidth: 76,
-            height: 38,
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.16)",
-            background: "#ef4444",
-            color: "#ffffff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            fontSize: "12px",
-            fontWeight: 800,
-            cursor: "pointer",
-            boxShadow: "0 8px 24px rgba(239,68,68,0.28)",
-          }}
+          className="flex h-[38px] min-w-[76px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.16)] bg-[#ef4444] text-xs font-extrabold text-white shadow-[0_8px_24px_rgba(239,68,68,0.28)]"
         >
           <Globe2 size={15} strokeWidth={2.2} />
           {language}
           <ChevronDown
             size={14}
             strokeWidth={2.2}
-            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.18s ease" }}
+            className={`transition-transform duration-[180ms] ${open ? "rotate-180" : "rotate-0"}`}
           />
         </button>
 
@@ -70,17 +43,7 @@ export function AuthTopControls() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.16, ease: "easeOut" }}
-              style={{
-                position: "absolute",
-                top: "46px",
-                left: 0,
-                width: 150,
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "14px",
-                padding: "6px",
-                boxShadow: "0 14px 36px rgba(0,0,0,0.28)",
-              }}
+              className="absolute left-0 top-[46px] w-[150px] rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-[0_14px_36px_rgba(0,0,0,0.28)]"
             >
               {languages.map((item) => {
                 const active = item.id === language
@@ -92,24 +55,12 @@ export function AuthTopControls() {
                       changeLanguage(item.id)
                       setOpen(false)
                     }}
-                    style={{
-                      width: "100%",
-                      background: active ? "rgba(239,68,68,0.16)" : "transparent",
-                      border: "none",
-                      borderRadius: "10px",
-                      padding: "9px 10px",
-                      color: active ? "#ef4444" : "var(--text)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      fontSize: "12px",
-                      fontWeight: active ? 800 : 600,
-                      cursor: "pointer",
-                      textAlign: "left",
-                    }}
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-[10px] border-0 px-2.5 py-[9px] text-left text-xs ${
+                      active ? "bg-[rgba(239,68,68,0.16)] font-extrabold text-[#ef4444]" : "bg-transparent font-semibold text-[var(--text)]"
+                    }`}
                   >
                     <span>{item.label}</span>
-                    <span style={{ color: active ? "#ef4444" : "var(--text-muted)", fontSize: "11px" }}>{item.id}</span>
+                    <span className={`text-[11px] ${active ? "text-[#ef4444]" : "text-[var(--text-muted)]"}`}>{item.id}</span>
                   </button>
                 )
               })}
@@ -122,20 +73,7 @@ export function AuthTopControls() {
         type="button"
         onClick={toggleTheme}
         aria-label="Toggle dark and light mode"
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: "999px",
-          border: "1px solid var(--border)",
-          background: "var(--surface-2)",
-          color: "var(--text)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.16)",
-          pointerEvents: "auto",
-        }}
+        className="pointer-events-auto flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
       >
         {theme === "dark" ? <Sun size={17} strokeWidth={2.1} /> : <Moon size={17} strokeWidth={2.1} />}
       </button>

@@ -11,13 +11,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     <motion.button
       onClick={toggleTheme}
       whileTap={{ scale: 0.88 }}
-      className={`fixed top-4 right-4 z-[100] w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${className || ""}`}
-      style={{
-        background: "var(--surface-2)",
-        borderColor: "var(--border)",
-        color: "var(--text)",
-        boxShadow: "var(--shadow)",
-      }}
+      className={`fixed right-4 top-4 z-[100] flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] shadow-[var(--shadow)] transition-colors ${className || ""}`}
       aria-label="Toggle theme"
     >
       {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}

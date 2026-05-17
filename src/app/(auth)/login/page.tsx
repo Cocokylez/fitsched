@@ -52,44 +52,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', position: 'relative', padding: '0 16px 24px' }}>
+    <div className="relative flex min-h-screen flex-col bg-[var(--bg)] px-4 pb-6">
       <AuthTopControls />
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        style={{
-          minHeight: '36vh',
-          background: "linear-gradient(180deg, rgba(107,191,184,0.1) 0%, transparent 78%)",
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-        }}
+        className="flex min-h-[36vh] flex-col items-center justify-center bg-[linear-gradient(180deg,rgba(107,191,184,0.1)_0%,transparent_78%)]"
       >
-        <div className="brand-wordmark" style={{ fontSize: '34px', fontWeight: 900, color: 'var(--text)' }}>{t.fitSched}</div>
-        <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>{t.tagline}</div>
+        <div className="brand-wordmark text-[34px] font-black text-[var(--text)]">{t.fitSched}</div>
+        <div className="mt-1.5 text-[13px] text-[var(--text-muted)]">{t.tagline}</div>
       </motion.div>
 
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut', delay: 0.15 }}
-        style={{
-          background: 'var(--panel)',
-          border: '1px solid var(--border)',
-          borderRadius: '28px',
-          padding: '32px 24px 40px',
-          position: 'relative',
-          zIndex: 2,
-          margin: '-28px auto 0',
-          width: '100%',
-          maxWidth: '480px',
-          boxShadow: 'var(--shadow-lg)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-        }}
+        className="relative z-[2] mx-auto -mt-7 w-full max-w-[480px] rounded-[28px] border border-[var(--border)] bg-[var(--panel)] px-6 pb-10 pt-8 shadow-[var(--shadow-lg)] backdrop-blur-[24px]"
       >
         <motion.div
           initial="hidden"
@@ -97,29 +77,21 @@ export default function LoginPage() {
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
         >
           <motion.div variants={fadeIn}>
-            <div className="display-text" style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>{t.welcomeBack}</div>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>{t.signInContinue}</div>
+            <div className="display-text mb-1 text-2xl font-extrabold text-[var(--text)]">{t.welcomeBack}</div>
+            <div className="mb-6 text-[13px] text-[var(--text-muted)]">{t.signInContinue}</div>
           </motion.div>
 
           <form onSubmit={handleSubmit}>
           {error && (
             <motion.div variants={fadeIn}>
-              <div style={{
-                background: 'var(--surface-2)',
-                border: '1px solid #ff4444',
-                borderRadius: '10px',
-                padding: '12px 16px',
-                color: '#ff6666',
-                fontSize: '13px',
-                marginBottom: '16px',
-              }}>
+              <div className="mb-4 rounded-[10px] border border-[#ff4444] bg-[var(--surface-2)] px-4 py-3 text-[13px] text-[#ff6666]">
                 {error}
               </div>
             </motion.div>
           )}
 
           <motion.div variants={fadeIn}>
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--text-muted)', marginBottom: '6px' }}>{t.email}</div>
+            <div className="mb-1.5 text-[10px] font-bold tracking-[0.15em] text-[var(--text-muted)]">{t.email}</div>
             <input
               type="email"
               placeholder="you@example.com"
@@ -128,41 +100,19 @@ export default function LoginPage() {
               required
               autoCapitalize="none"
               autoCorrect="off"
-              style={{
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                color: 'var(--text)',
-                fontSize: '14px',
-                outline: 'none',
-                width: '100%',
-                marginBottom: '16px',
-                boxSizing: 'border-box' as const,
-              }}
+              className="mb-4 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3.5 text-sm text-[var(--text)] outline-none"
             />
           </motion.div>
 
           <motion.div variants={fadeIn}>
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--text-muted)', marginBottom: '6px' }}>{t.password}</div>
+            <div className="mb-1.5 text-[10px] font-bold tracking-[0.15em] text-[var(--text-muted)]">{t.password}</div>
             <input
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              style={{
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                color: 'var(--text)',
-                fontSize: '14px',
-                outline: 'none',
-                width: '100%',
-                marginBottom: '24px',
-                boxSizing: 'border-box' as const,
-              }}
+              className="mb-6 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3.5 text-sm text-[var(--text)] outline-none"
             />
           </motion.div>
 
@@ -170,20 +120,9 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="motion-lift"
-              style={{
-                width: '100%',
-                background: 'var(--text)',
-                color: 'var(--bg)',
-                border: 'none',
-                borderRadius: '16px',
-                padding: '15px',
-                fontSize: '15px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                marginBottom: '20px',
-                opacity: loading ? 0.55 : 1,
-              }}
+              className={`motion-lift mb-5 w-full cursor-pointer rounded-2xl border-0 bg-[var(--text)] p-[15px] text-[15px] font-bold text-[var(--bg)] ${
+                loading ? "opacity-55" : "opacity-100"
+              }`}
             >
               {loading ? 'Signing in...' : t.signIn}
             </button>
@@ -191,10 +130,10 @@ export default function LoginPage() {
           </form>
 
           <motion.div variants={fadeIn}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border)' }} />
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t.orContinueWith}</span>
-              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border)' }} />
+            <div className="mb-5 flex items-center gap-3">
+              <hr className="flex-1 border-0 border-t border-[var(--border)]" />
+              <span className="text-[11px] text-[var(--text-muted)]">{t.orContinueWith}</span>
+              <hr className="flex-1 border-0 border-t border-[var(--border)]" />
             </div>
           </motion.div>
 
@@ -203,10 +142,10 @@ export default function LoginPage() {
           </motion.div>
 
           <motion.div variants={fadeIn}>
-            <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+            <p className="m-0 text-center text-xs text-[var(--text-muted)]">
               {t.noAccount}{' '}
               <span
-                style={{ color: 'var(--text)', fontWeight: 700, cursor: 'pointer' }}
+                className="cursor-pointer font-bold text-[var(--text)]"
                 onClick={() => router.push('/register')}
               >
                 {t.signUp}
