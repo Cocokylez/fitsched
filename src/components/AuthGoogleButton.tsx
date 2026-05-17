@@ -3,12 +3,19 @@
 import Image from "next/image"
 import { signIn } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
+import { isGoogleAuthAvailable } from "@/services/authProviders"
 
 interface AuthGoogleButtonProps {
   label: string
   callbackPath?: string
 }
 
+/**
+ * Starts Google auth in a popup and completes sign-in without replacing the main page.
+ *
+ * @param props - Button label and post-login callback path.
+ * @returns The Google auth button and any safe auth-start error message.
+ */
 export function AuthGoogleButton({
   label,
   callbackPath = "/schedule",
@@ -25,11 +32,8 @@ export function AuthGoogleButton({
 
     const loadProviders = async () => {
       try {
-        const response = await fetch("/api/auth/providers")
-        if (!response.ok) return
-
-        const providers = await response.json()
-        if (mounted) setGoogleAvailable(Boolean(providers?.google))
+        const available = await isGoogleAuthAvailable()
+        if (mounted) setGoogleAvailable(available)
       } catch {}
       finally {
         if (mounted) setCheckingGoogle(false)

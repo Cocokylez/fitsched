@@ -1,7 +1,16 @@
 import { Footprints, Mountain, Route } from "lucide-react"
 
 const ACCENT = "#6bbfb8"
+const HIKE_FEATURES = [
+  { label: "Route builder", Icon: Route },
+  { label: "Outdoor sessions", Icon: Footprints },
+]
 
+/**
+ * Shows the placeholder page for the upcoming dedicated Hike feature.
+ *
+ * @returns The under-construction Hike page UI.
+ */
 export default function HikePage() {
   return (
     <div
@@ -120,7 +129,7 @@ export default function HikePage() {
                 margin: "0 auto 20px",
               }}
             >
-              This page is ready for tomorrow's details, so the hike feature can grow without mixing into normal workouts.
+              This page is ready for tomorrow&apos;s details, so the hike feature can grow without mixing into normal workouts.
             </div>
 
             <div
@@ -130,10 +139,7 @@ export default function HikePage() {
                 gap: 10,
               }}
             >
-              {[
-                { label: "Route builder", Icon: Route },
-                { label: "Outdoor sessions", Icon: Footprints },
-              ].map((item) => (
+              {HIKE_FEATURES.map((item) => (
                 <div
                   key={item.label}
                   style={{

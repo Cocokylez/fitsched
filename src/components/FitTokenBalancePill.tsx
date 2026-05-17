@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { fetchFitTokenBalance } from "@/services/fitTokens";
 
-type TokenResponse = {
-  balance: number;
-};
-
+/**
+ * Formats a FitToken amount for compact display.
+ *
+ * @param value - Numeric token balance.
+ * @returns A fixed two-decimal token string.
+ */
 function formatTokenBalance(value: number) {
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -14,23 +17,20 @@ function formatTokenBalance(value: number) {
   });
 }
 
+/**
+ * Displays the current user's FitToken balance and refreshes it on navigation/focus.
+ *
+ * @returns The FitToken balance pill UI.
+ */
 export function FitTokenBalancePill() {
   const pathname = usePathname();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadBalance = useCallback(async () => {
-    try {
-      const response = await fetch("/api/tokens", { cache: "no-store" });
-      if (!response.ok) return;
-
-      const data = (await response.json()) as TokenResponse;
-      setBalance(Number(data.balance || 0));
-    } catch {
-      setBalance(0);
-    } finally {
-      setLoading(false);
-    }
+    const nextBalance = await fetchFitTokenBalance();
+    setBalance(nextBalance);
+    setLoading(false);
   }, []);
 
   useEffect(() => {

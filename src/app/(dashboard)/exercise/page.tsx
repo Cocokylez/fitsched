@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { useLanguage } from "@/context/LanguageContext"
@@ -39,12 +39,23 @@ const FEEDBACK_OPTIONS: Array<{ value: SessionFeedback; label: string; detail: s
   { value: "too_hard", label: "Too hard", detail: "Scale back" },
 ]
 
+/**
+ * Formats elapsed seconds into a mm:ss timer label.
+ *
+ * @param totalSeconds - Total elapsed or remaining seconds.
+ * @returns A zero-padded timer string.
+ */
 function formatTime(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
 }
 
+/**
+ * Runs the active workout session flow, including set progress, rest timing, rewards, and feedback.
+ *
+ * @returns The exercise session page UI.
+ */
 export default function ExerciseSessionPage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -114,21 +125,6 @@ export default function ExerciseSessionPage() {
     return () => window.clearInterval(timer)
   }, [running])
 
-  useEffect(() => {
-    if (!resting || !running) return
-
-    if (restLeft <= 0) {
-      setResting(false)
-      advanceAfterRest()
-      return
-    }
-
-    const timer = window.setInterval(() => {
-      setRestLeft((value) => Math.max(0, value - 1))
-    }, 1000)
-    return () => window.clearInterval(timer)
-  }, [resting, restLeft, running])
-
   const current = workout?.exercises[currentIndex]
   const currentCompletedSets = completedSets[currentIndex] || 0
   const currentSetNumber = current ? Math.min(currentCompletedSets + 1, current.sets) : 1
@@ -149,7 +145,12 @@ export default function ExerciseSessionPage() {
     }
   }, [workout])
 
-  function advanceAfterRest() {
+  /**
+   * Moves the session to the next unfinished exercise after rest completes.
+   *
+   * @returns Nothing.
+   */
+  const advanceAfterRest = useCallback(() => {
     if (!workout) return
 
     const nextUnfinished = workout.exercises.findIndex((exercise, index) =>
@@ -164,7 +165,22 @@ export default function ExerciseSessionPage() {
       (completedSets[index] || 0) < exercise.sets
     )
     if (firstUnfinished !== -1) setCurrentIndex(firstUnfinished)
-  }
+  }, [completedSets, currentIndex, workout])
+
+  useEffect(() => {
+    if (!resting || !running) return
+
+    if (restLeft <= 0) {
+      setResting(false)
+      advanceAfterRest()
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      setRestLeft((value) => Math.max(0, value - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [advanceAfterRest, resting, restLeft, running])
 
   function completeCurrentSet() {
     if (!workout || !current || resting) return

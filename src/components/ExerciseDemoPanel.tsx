@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { getExerciseDemo } from "@/lib/exerciseDemos"
 
@@ -21,6 +22,12 @@ type ExerciseDemoVisualProps = {
   onToggleTimer?: () => void
 }
 
+/**
+ * Renders the start/end exercise demo images and handles fallback image sources.
+ *
+ * @param props - Demo image paths, labels, timer state, and interaction callbacks.
+ * @returns The interactive visual frame for an exercise demo.
+ */
 function DemoFrame({
   startSrc,
   endSrc,
@@ -126,13 +133,14 @@ function DemoFrame({
       ) : (
         <>
           {!startFailed && (
-            <img
+            <Image
               src={startImageSrc}
               alt={startAlt}
               onError={() => handleImageError("start")}
               loading="lazy"
-              decoding="async"
-              fetchPriority={active ? "auto" : "low"}
+              fill
+              sizes="(max-width: 768px) 100vw, 128px"
+              unoptimized
               style={{
                 position: "absolute",
                 inset: 0,
@@ -147,13 +155,14 @@ function DemoFrame({
             />
           )}
           {!endFailed && (
-            <img
+            <Image
               src={endImageSrc}
               alt={endAlt}
               onError={() => handleImageError("end")}
               loading="lazy"
-              decoding="async"
-              fetchPriority={active ? "auto" : "low"}
+              fill
+              sizes="(max-width: 768px) 100vw, 128px"
+              unoptimized
               style={{
                 position: "absolute",
                 inset: 0,
@@ -211,6 +220,12 @@ function DemoFrame({
   )
 }
 
+/**
+ * Displays the visual-only exercise demo frame.
+ *
+ * @param props - Exercise name, sizing, timer, and playback controls.
+ * @returns A responsive exercise demo visual.
+ */
 export function ExerciseDemoVisual({
   exerciseName,
   compact = false,
@@ -269,6 +284,12 @@ export function ExerciseDemoVisual({
   )
 }
 
+/**
+ * Displays exercise instructions, target muscles, difficulty, and optional demo visual.
+ *
+ * @param props - Exercise name and display mode options.
+ * @returns The exercise demo information panel.
+ */
 export function ExerciseDemoPanel({
   exerciseName,
   compact = false,
