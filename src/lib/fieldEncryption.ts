@@ -19,15 +19,23 @@ function getFieldEncryptionKey() {
   return key
 }
 
+export function isFieldEncryptionConfigured() {
+  return Boolean(getFieldEncryptionKey())
+}
+
+function requireFieldEncryptionKey() {
+  const key = getFieldEncryptionKey()
+  if (!key) {
+    throw new Error("FIELD_ENCRYPTION_KEY is required to use stored calendar secrets")
+  }
+
+  return key
+}
+
 export function encryptSecret(value: string) {
   if (!value || value.startsWith(PREFIX)) return value
 
-  const key = getFieldEncryptionKey()
-  if (!key) {
-    // Manual production config needed: set FIELD_ENCRYPTION_KEY before using
-    // calendar sync with real users so OAuth tokens are encrypted at rest.
-    return value
-  }
+  const key = requireFieldEncryptionKey()
 
   const iv = randomBytes(12)
   const cipher = createCipheriv("aes-256-gcm", key, iv)
@@ -40,10 +48,7 @@ export function encryptSecret(value: string) {
 export function decryptSecret(value: string) {
   if (!value || !value.startsWith(PREFIX)) return value
 
-  const key = getFieldEncryptionKey()
-  if (!key) {
-    throw new Error("FIELD_ENCRYPTION_KEY is required to decrypt stored secrets")
-  }
+  const key = requireFieldEncryptionKey()
 
   const payload = Buffer.from(value.slice(PREFIX.length), "base64")
   const iv = payload.subarray(0, 12)

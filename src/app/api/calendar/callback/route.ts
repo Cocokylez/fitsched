@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { encryptSecret } from "@/lib/fieldEncryption";
+import { encryptSecret, isFieldEncryptionConfigured } from "@/lib/fieldEncryption";
 import { serverEnv } from "@/lib/env";
 import { rateLimitByUser, rateLimitPresets } from "@/lib/security";
 import { cleanStringSchema, parseQuery, strictObject } from "@/lib/validation";
@@ -49,6 +49,9 @@ export async function GET(req: Request) {
 
     if (!serverEnv.googleCalendarClientId || !serverEnv.googleCalendarClientSecret) {
       return NextResponse.redirect(`${origin}/settings?error=calendar_not_configured`);
+    }
+    if (!isFieldEncryptionConfigured()) {
+      return NextResponse.redirect(`${origin}/settings?error=calendar_encryption_not_configured`);
     }
 
     const oauth2Client = new google.auth.OAuth2(

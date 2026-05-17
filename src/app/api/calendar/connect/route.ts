@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { internalError, unauthorized } from "@/lib/apiResponse";
 import { serverEnv } from "@/lib/env";
+import { isFieldEncryptionConfigured } from "@/lib/fieldEncryption";
 import { rateLimitByUser, rateLimitPresets } from "@/lib/security";
 import { parseQuery, strictObject } from "@/lib/validation";
 import { google } from "googleapis";
@@ -20,6 +21,9 @@ export async function GET(req: Request) {
 
     if (!serverEnv.googleCalendarClientId || !serverEnv.googleCalendarClientSecret) {
       return NextResponse.json({ error: "Calendar integration is not configured" }, { status: 503 });
+    }
+    if (!isFieldEncryptionConfigured()) {
+      return NextResponse.json({ error: "Calendar encryption is not configured" }, { status: 503 });
     }
 
     const origin = new URL(req.url).origin;

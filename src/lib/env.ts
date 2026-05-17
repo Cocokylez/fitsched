@@ -38,16 +38,6 @@ function assertCompleteSecretGroup(keys: readonly string[]) {
 }
 
 /**
- * Detects Next's production build phase, where route modules are evaluated
- * before runtime-only secrets may be available in local or preview builds.
- *
- * @returns True when Next.js is collecting production build data.
- */
-function isNextProductionBuild() {
-  return readEnv("NEXT_PHASE") === "phase-production-build"
-}
-
-/**
  * Validates required server-side environment variables at backend startup/import time.
  *
  * @returns A normalized subset of safe environment values.
@@ -62,15 +52,10 @@ export function validateServerEnv() {
     assertCompleteSecretGroup(group)
   }
 
-  const hasCalendarSecrets = Boolean(readEnv("GOOGLE_CALENDAR_CLIENT_ID") && readEnv("GOOGLE_CALENDAR_CLIENT_SECRET"))
   const fieldEncryptionKey = readEnv("FIELD_ENCRYPTION_KEY")
 
   if (fieldEncryptionKey) {
     FIELD_ENCRYPTION_KEY_SCHEMA.parse(fieldEncryptionKey)
-  }
-
-  if (process.env.NODE_ENV === "production" && hasCalendarSecrets && !fieldEncryptionKey && !isNextProductionBuild()) {
-    missing.push("FIELD_ENCRYPTION_KEY")
   }
 
   if (missing.length > 0) {
