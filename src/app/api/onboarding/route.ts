@@ -21,7 +21,11 @@ const onboardingBodySchema = strictObject({
 })
 
 const onboardingPatchBodySchema = strictObject({
-  workoutEnvironment: workoutEnvironmentSchema,
+  workoutEnvironment: workoutEnvironmentSchema.optional(),
+  heightCm: z.coerce.number().min(50).max(260).optional().nullable(),
+  weightKg: z.coerce.number().min(20).max(400).optional().nullable(),
+  hasInjury: z.boolean().optional(),
+  injuryNotes: cleanStringSchema(500).optional(),
 })
 
 function parseWorkoutEnvironment(value: unknown) {
@@ -86,19 +90,64 @@ export async function PATCH(req: Request) {
 
     const parsedBody = await parseJsonBody(req, onboardingPatchBodySchema)
     if (parsedBody.response) return parsedBody.response
-    const data: { workoutEnvironment?: string } = {}
+    const body = parsedBody.data
 
-    const workoutEnvironment = parseWorkoutEnvironment(parsedBody.data.workoutEnvironment)
-    if (!workoutEnvironment) {
-      return safeError("Invalid workout environment")
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        heightCm: true,
+        weightKg: true,
+        hasInjury: true,
+      },
+    })
+
+    if (!currentUser) return unauthorized()
+
+    const data: {
+      workoutEnvironment?: string
+      heightCm?: number | null
+      weightKg?: number | null
+      bmi?: number | null
+      hasInjury?: boolean
+      injuryNotes?: string | null
+    } = {}
+
+    if (body.workoutEnvironment !== undefined) {
+      const workoutEnvironment = parseWorkoutEnvironment(body.workoutEnvironment)
+      if (!workoutEnvironment) {
+        return safeError("Invalid workout environment")
+      }
+      data.workoutEnvironment = workoutEnvironment
     }
-    data.workoutEnvironment = workoutEnvironment
+
+    const nextHeight = body.heightCm !== undefined ? body.heightCm ?? null : currentUser.heightCm
+    const nextWeight = body.weightKg !== undefined ? body.weightKg ?? null : currentUser.weightKg
+
+    if (body.heightCm !== undefined || body.weightKg !== undefined) {
+      data.heightCm = nextHeight
+      data.weightKg = nextWeight
+      data.bmi = nextHeight && nextWeight
+        ? Math.round((nextWeight / ((nextHeight / 100) ** 2)) * 10) / 10
+        : null
+    }
+
+    if (body.hasInjury !== undefined) {
+      data.hasInjury = body.hasInjury
+      data.injuryNotes = body.hasInjury ? cleanText(body.injuryNotes || "", 500) : null
+    } else if (body.injuryNotes !== undefined && currentUser.hasInjury) {
+      data.injuryNotes = cleanText(body.injuryNotes, 500)
+    }
 
     const user = await db.user.update({
       where: { id: session.user.id },
       data,
       select: {
         workoutEnvironment: true,
+        heightCm: true,
+        weightKg: true,
+        bmi: true,
+        hasInjury: true,
+        injuryNotes: true,
       },
     })
 

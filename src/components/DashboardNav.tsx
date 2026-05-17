@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Dumbbell, Footprints, User } from 'lucide-react'
+import { BarChart3, Dumbbell, Footprints, User } from 'lucide-react'
 import { useTheme } from "@/context/ThemeContext"
 import { useLanguage } from "@/context/LanguageContext"
 
@@ -19,6 +19,12 @@ const navItems = [
     label: "Workout",
     href: "/workout",
     icon: <Dumbbell size={20} />,
+  },
+  {
+    id: "report",
+    label: "Report",
+    href: "/report",
+    icon: <BarChart3 size={20} />,
   },
   {
     id: "hike",
@@ -127,14 +133,14 @@ export function DashboardNav() {
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="pointer-events-none fixed inset-x-0 bottom-[max(14px,env(safe-area-inset-bottom))] z-[70] flex items-center justify-center px-3.5"
         >
-          <div className={`dashboard-nav-shell pointer-events-auto relative grid w-full max-w-[430px] grid-cols-4 items-center overflow-hidden rounded-[28px] border p-1.5 backdrop-blur-[22px] ${navThemeClass}`}>
+          <div className={`dashboard-nav-shell pointer-events-auto relative grid w-full max-w-[460px] grid-cols-5 items-center overflow-hidden rounded-[28px] border p-1.5 backdrop-blur-[22px] ${navThemeClass}`}>
             {activeIndex >= 0 && (
               <motion.span
                 aria-hidden="true"
                 initial={false}
                 animate={{ x: `${activeIndex * 100}%` }}
                 transition={{ type: "spring", stiffness: 250, damping: 25, mass: 0.78 }}
-                className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-12px)/4)] rounded-[20px] border border-[rgba(107,191,184,0.25)] bg-[linear-gradient(180deg,rgba(107,191,184,0.2),rgba(107,191,184,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(107,191,184,0.12)]"
+                className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-12px)/5)] rounded-[20px] border border-[rgba(107,191,184,0.25)] bg-[linear-gradient(180deg,rgba(107,191,184,0.2),rgba(107,191,184,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(107,191,184,0.12)]"
               />
             )}
             {navItems.map((item, index) => {
@@ -162,7 +168,7 @@ export function DashboardNav() {
                     {item.icon}
                   </motion.span>
                   <span className={`relative font-[var(--font-display)] text-[10px] font-extrabold leading-none tracking-normal ${isActive ? "text-[var(--text)]" : "text-[var(--text-muted)]"}`}>
-                    {t[item.id as keyof typeof t] as string}
+                    {(t[item.id as keyof typeof t] as string) || item.label}
                   </span>
                 </motion.button>
               )
