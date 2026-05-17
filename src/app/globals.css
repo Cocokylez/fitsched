@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -15,9 +15,9 @@
   --color-red-bg: rgba(239, 68, 68, 0.10);
 
   --font-heading: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -54,6 +54,26 @@ html {
   --shadow: 0 10px 34px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.035);
   --shadow-md: 0 18px 56px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.045);
   --shadow-lg: 0 28px 86px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+  --brand: var(--accent);
+  --brand-bg: var(--accent-soft);
+  --brand-bd: var(--border-strong);
+  --green: #35c894;
+  --green-bg: rgba(53, 200, 148, 0.12);
+  --green-bd: rgba(53, 200, 148, 0.22);
+  --orange: #e7a43a;
+  --orange-bg: rgba(231, 164, 58, 0.12);
+  --orange-bd: rgba(231, 164, 58, 0.22);
+  --red: var(--danger);
+  --red-bg: rgba(240, 108, 108, 0.12);
+  --bg1: var(--panel);
+  --bg2: var(--surface-2);
+  --bg3: rgba(255, 255, 255, 0.09);
+  --t1: var(--text);
+  --t2: #c5d0cd;
+  --t3: var(--text-muted);
+  --purple: #a99df1;
+  --purple-bg: rgba(169, 157, 241, 0.12);
+  --purple-bd: rgba(169, 157, 241, 0.22);
 }
 
 [data-theme='light'] {
@@ -73,6 +93,26 @@ html {
   --shadow: 0 12px 32px rgba(22, 32, 30, 0.07), inset 0 1px 0 rgba(255,255,255,0.68);
   --shadow-md: 0 18px 48px rgba(22, 32, 30, 0.1), inset 0 1px 0 rgba(255,255,255,0.74);
   --shadow-lg: 0 26px 72px rgba(22, 32, 30, 0.13), inset 0 1px 0 rgba(255,255,255,0.78);
+  --brand: var(--accent);
+  --brand-bg: var(--accent-soft);
+  --brand-bd: var(--border-strong);
+  --green: #14865e;
+  --green-bg: rgba(20, 134, 94, 0.1);
+  --green-bd: rgba(20, 134, 94, 0.18);
+  --orange: #b46f16;
+  --orange-bg: rgba(180, 111, 22, 0.11);
+  --orange-bd: rgba(180, 111, 22, 0.2);
+  --red: var(--danger);
+  --red-bg: rgba(217, 86, 86, 0.1);
+  --bg1: var(--panel);
+  --bg2: var(--surface-2);
+  --bg3: rgba(17, 24, 22, 0.085);
+  --t1: var(--text);
+  --t2: #3f4b48;
+  --t3: var(--text-muted);
+  --purple: #6f63bf;
+  --purple-bg: rgba(111, 99, 191, 0.11);
+  --purple-bd: rgba(111, 99, 191, 0.2);
 }
 
 body {
@@ -117,6 +157,26 @@ samp {
   font-family: var(--font-heading);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
+}
+
+.ios-inset-grouped {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  transform: translateZ(0);
+}
+
+.ios-inset-grouped::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
 body::before {
