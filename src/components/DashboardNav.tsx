@@ -54,8 +54,8 @@ export function DashboardNav() {
   const [travelIndex, setTravelIndex] = useState(Math.max(currentIndex, 0))
   const activeIndex = currentIndex >= 0 ? travelIndex : -1
   const navThemeClass = theme === "dark"
-    ? "border-[rgba(255,255,255,0.08)] bg-[rgba(19,23,22,0.74)] shadow-[0_18px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.05)]"
-    : "border-[rgba(17,24,22,0.09)] bg-[rgba(255,255,255,0.76)] shadow-[0_18px_44px_rgba(22,32,30,0.12),inset_0_1px_0_rgba(255,255,255,0.75)]"
+    ? "border-[rgba(255,255,255,0.075)] bg-[rgba(18,23,22,0.82)] shadow-[0_20px_58px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.05)]"
+    : "border-[rgba(17,24,22,0.075)] bg-[rgba(255,255,255,0.84)] shadow-[0_18px_42px_rgba(22,32,30,0.1),inset_0_1px_0_rgba(255,255,255,0.8)]"
 
   useEffect(() => {
     if (currentIndex >= 0) setTravelIndex(currentIndex)
@@ -131,16 +131,16 @@ export function DashboardNav() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 76, opacity: 0 }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-none fixed inset-x-0 bottom-[max(14px,env(safe-area-inset-bottom))] z-[70] flex items-center justify-center px-3.5"
+          className="pointer-events-none fixed inset-x-0 bottom-[max(14px,env(safe-area-inset-bottom))] z-[70] flex items-center justify-center px-4"
         >
-          <div className={`dashboard-nav-shell pointer-events-auto relative grid w-full max-w-[460px] grid-cols-5 items-center overflow-hidden rounded-[28px] border p-1.5 backdrop-blur-[22px] ${navThemeClass}`}>
+          <div className={`dashboard-nav-shell pointer-events-auto relative grid w-full max-w-[456px] grid-cols-5 items-center overflow-hidden rounded-[30px] border p-1.5 backdrop-blur-[18px] ${navThemeClass}`}>
             {activeIndex >= 0 && (
               <motion.span
                 aria-hidden="true"
                 initial={false}
                 animate={{ x: `${activeIndex * 100}%` }}
                 transition={{ type: "spring", stiffness: 250, damping: 25, mass: 0.78 }}
-                className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-12px)/5)] rounded-[20px] border border-[rgba(107,191,184,0.25)] bg-[linear-gradient(180deg,rgba(107,191,184,0.2),rgba(107,191,184,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(107,191,184,0.12)]"
+                className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-12px)/5)] rounded-[22px] border border-[rgba(107,191,184,0.24)] bg-[linear-gradient(180deg,rgba(107,191,184,0.18),rgba(107,191,184,0.07))] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               />
             )}
             {navItems.map((item, index) => {
@@ -156,7 +156,7 @@ export function DashboardNav() {
                   }}
                   whileTap={{ scale: 0.96 }}
                   animate={{ y: isActive ? -1 : 0 }}
-                  className={`relative z-[1] flex min-h-[54px] min-w-0 cursor-pointer flex-col items-center justify-center gap-[3px] overflow-hidden rounded-[22px] border-0 bg-transparent px-2 py-[7px] ${
+                  className={`relative z-[1] flex min-h-[54px] min-w-0 cursor-pointer flex-col items-center justify-center gap-[3px] overflow-hidden rounded-[24px] border-0 bg-transparent px-2 py-[7px] ${
                     isActive ? "text-[var(--text)]" : "text-[var(--text-muted)]"
                   }`}
                 >

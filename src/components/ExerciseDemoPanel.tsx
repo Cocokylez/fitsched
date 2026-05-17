@@ -103,14 +103,14 @@ function DemoFrame({
   }
 
   const visiblePhase = startFailed ? "end" : endFailed ? "start" : phase
-  const imageClass = `${objectFit === "cover" ? "object-cover" : "object-contain"} absolute inset-0 block h-full w-full [transform:translateZ(0)] transition-opacity duration-[460ms] ease-[ease]`
+  const imageClass = `${objectFit === "cover" ? "object-cover" : "object-contain"} absolute inset-0 block h-full w-full [transform:translateZ(0)] transition-opacity duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)]`
 
   return (
     <button
       type="button"
       onClick={onToggleTimer}
       aria-label={onToggleTimer ? (paused ? "Resume timer" : "Pause timer") : undefined}
-      className={`relative grid h-full w-full min-w-0 place-items-center overflow-hidden border-0 bg-[rgba(255,255,255,0.03)] p-0 font-[inherit] text-inherit [-webkit-tap-highlight-color:transparent] ${
+      className={`relative grid h-full w-full min-w-0 place-items-center overflow-hidden border-0 bg-[rgba(255,255,255,0.025)] p-0 font-[inherit] text-inherit [-webkit-tap-highlight-color:transparent] ${
         onToggleTimer ? "cursor-pointer" : "cursor-default"
       }`}
     >
@@ -146,7 +146,7 @@ function DemoFrame({
           )}
         </>
       )}
-      <div className="absolute bottom-[5px] left-[5px] rounded-full bg-[rgba(0,0,0,0.5)] px-[5px] py-0.5 text-[8px] font-black tracking-normal text-white">
+      <div className="absolute bottom-[5px] left-[5px] rounded-full bg-[rgba(0,0,0,0.48)] px-[5px] py-0.5 text-[8px] font-black tracking-normal text-white">
         {visiblePhase === "start" ? "START" : "END"}
       </div>
       {timerText && (
@@ -200,7 +200,7 @@ export function ExerciseDemoVisual({
   return (
     <div
       ref={frameRef}
-      className={`relative overflow-hidden border border-[rgba(107,191,184,0.22)] bg-[linear-gradient(135deg,rgba(107,191,184,0.14),rgba(255,255,255,0.04))] [contain:layout_paint_style] ${
+      className={`relative overflow-hidden border border-[rgba(107,191,184,0.2)] bg-[linear-gradient(135deg,rgba(107,191,184,0.1),rgba(255,255,255,0.035))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] [contain:layout_paint_style] ${
         compact ? "rounded-[11px]" : "rounded-[14px]"
       } ${frameHeightClass}`}
     >
@@ -237,8 +237,8 @@ export function ExerciseDemoPanel({
   const visibleInstructions = compact ? demo.instructions.slice(0, 2) : demo.instructions
   const panelClass = showVisual
     ? compact
-      ? "mt-2.5 mb-0 grid grid-cols-[92px_1fr] items-stretch gap-2.5 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-2.5"
-      : "mt-3.5 mb-3.5 grid grid-cols-[128px_1fr] items-stretch gap-3.5 rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] p-3"
+      ? "mt-2.5 mb-0 grid grid-cols-[92px_1fr] items-stretch gap-2.5 rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] p-2.5"
+      : "mt-3.5 mb-3.5 grid grid-cols-[128px_1fr] items-stretch gap-3.5 rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] p-3"
     : "mb-2.5 grid grid-cols-1 items-stretch gap-3.5 bg-transparent p-0"
 
   return (

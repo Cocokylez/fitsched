@@ -9,6 +9,7 @@ import { useLanguage } from "@/context/LanguageContext"
 import { useTheme } from "@/context/ThemeContext"
 import { SkeletonExerciseRow } from "@/components/Skeleton"
 import { ExerciseDemoPanel } from "@/components/ExerciseDemoPanel"
+import { DashboardTopBar } from "@/components/DashboardTopBar"
 import { getSmartExercisePlan, parseSetsReps, toWorkoutExercises } from "@/lib/workoutRecommendations"
 import { getFeedbackAdjustedExperienceLevel } from "@/lib/workoutFeedback"
 
@@ -199,7 +200,7 @@ export default function WorkoutPage() {
   const [loading, setLoading] = useState(true)
   const [completedDateIds, setCompletedDateIds] = useState<Set<string>>(new Set())
   const { t, language } = useLanguage()
-  const { theme, toggleTheme } = useTheme()
+  const { theme } = useTheme()
   const [smartExercises, setSmartExercises] = useState<Array<[string, string]> | null>(null)
   const [computing, setComputing] = useState(true)
   const dayNames = [t.days.sun, t.days.mon, t.days.tue, t.days.wed, t.days.thu, t.days.fri, t.days.sat]
@@ -429,45 +430,21 @@ export default function WorkoutPage() {
   if (selectedDay === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "transparent", display: "flex", flexDirection: "column" }}>
-        <div style={{
-          background: "var(--panel)",
-          padding: "16px 20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          border: "1px solid var(--border)",
-          borderRadius: "24px",
-          margin: "12px 12px 0",
-          boxShadow: "var(--shadow)",
-        }}>
-          <div className="brand-wordmark" style={{ fontSize: "15px", fontWeight: 900, color: "var(--text)" }}>
+        <DashboardTopBar
+          title={
             <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
               {t.workout}
             </motion.span>
-          </div>
-          <button onClick={toggleTheme} style={{
-            background: "var(--surface-2)", border: "1px solid var(--border)",
-            borderRadius: "50%", width: "32px", height: "32px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", color: "var(--text)",
-          }}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-              {theme === "dark" ? (
-                <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
-              ) : (
-                <><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>
-              )}
-            </svg>
-          </button>
-        </div>
-        <div data-dashboard-scroll style={{ padding: "20px", flex: 1, overflowY: "auto" }}>
+          }
+        />
+        <div data-dashboard-scroll style={{ padding: "22px 20px", flex: 1, overflowY: "auto" }}>
           <motion.div variants={stagger} initial="hidden" animate="visible">
             <motion.div variants={fadeUp}>
               <div style={{
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
-                borderRadius: "22px",
-                padding: "32px 24px",
+                borderRadius: "26px",
+                padding: "36px 24px",
                 textAlign: "center",
                 boxShadow: "var(--shadow)",
               }}>
@@ -516,35 +493,9 @@ export default function WorkoutPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "transparent", display: "flex", flexDirection: "column" }}>
-      <div style={{
-        background: "var(--panel)",
-        padding: "16px 20px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        border: "1px solid var(--border)",
-        borderRadius: "24px",
-        margin: "12px 12px 0",
-        boxShadow: "var(--shadow)",
-      }}>
-        <div className="brand-wordmark" style={{ fontSize: "15px", fontWeight: 900, color: "var(--text)" }}>{t.workout}</div>
-        <button onClick={toggleTheme} style={{
-          background: "var(--surface-2)", border: "1px solid var(--border)",
-          borderRadius: "50%", width: "32px", height: "32px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", color: "var(--text)",
-        }}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-            {theme === "dark" ? (
-              <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
-            ) : (
-              <><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>
-            )}
-          </svg>
-        </button>
-      </div>
+      <DashboardTopBar title={t.workout} />
 
-      <div data-dashboard-scroll style={{ padding: "20px", flex: 1, overflowY: "auto", paddingBottom: "32px" }}>
+      <div data-dashboard-scroll style={{ padding: "22px 20px", flex: 1, overflowY: "auto", paddingBottom: "34px" }}>
         <motion.div variants={stagger} initial="hidden" animate="visible">
           <motion.div variants={fadeUp}>
             <div style={{ display: "flex", gap: "8px", overflowX: "auto", marginBottom: "20px", scrollbarWidth: "none" }}>
@@ -557,17 +508,16 @@ export default function WorkoutPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    className="motion-lift"
+                    className="motion-lift day-pill"
                     style={{
                       background: i === selectedDay ? "var(--accent)" : "var(--panel)",
                       border: i === selectedDay ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      borderRadius: "18px",
-                      padding: "10px 14px",
+                      padding: "11px 15px",
                       textAlign: "center",
-                      minWidth: "52px",
+                      minWidth: "56px",
                       cursor: "pointer",
                       flexShrink: 0,
-                      boxShadow: i === selectedDay ? "0 12px 32px rgba(107, 191, 184, 0.18)" : "none",
+                      boxShadow: i === selectedDay ? "inset 0 1px 0 rgba(255, 255, 255, 0.24)" : "var(--shadow)",
                     }}
                   >
                     <div style={{
@@ -580,8 +530,8 @@ export default function WorkoutPage() {
                       {dayNames[i]}
                     </div>
                     <div style={{
-                      fontSize: "18px",
-                      fontWeight: 800,
+                      fontSize: "19px",
+                      fontWeight: 900,
                       color: i === selectedDay ? "#0b1715" : "var(--text)",
                     }}>
                       {date.getDate()}
@@ -614,8 +564,8 @@ export default function WorkoutPage() {
               <div style={{
                 background: "rgba(107, 191, 184, 0.12)",
                 border: "1px solid rgba(107, 191, 184, 0.32)",
-                borderRadius: "16px",
-                padding: "14px 16px",
+                borderRadius: "20px",
+                padding: "15px 17px",
                 marginBottom: "14px",
                 color: "var(--text)",
               }}>
@@ -634,7 +584,7 @@ export default function WorkoutPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <div className="shine-surface" style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "22px", overflow: "hidden", marginBottom: "16px", boxShadow: "var(--shadow)" }}>
+              <div className="shine-surface quiet-card" style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "24px", overflow: "hidden", marginBottom: "16px", boxShadow: "var(--shadow)" }}>
                 {[1,2,3,4,5].map(i => (
                   <SkeletonExerciseRow key={i} />
                 ))}
@@ -642,7 +592,7 @@ export default function WorkoutPage() {
             </motion.div>
           ) : (
             <motion.div variants={fadeUp}>
-              <div style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "22px", overflow: "hidden", marginBottom: "16px", boxShadow: "var(--shadow)" }}>
+              <div className="quiet-card" style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "24px", overflow: "hidden", marginBottom: "16px", boxShadow: "var(--shadow)" }}>
                 {todayExercises.map((ex, i) => (
                   <div
                     key={i}
@@ -707,10 +657,10 @@ export default function WorkoutPage() {
               background: "var(--surface-2)",
               color: "var(--text)",
               border: "1px solid var(--border)",
-              borderRadius: "14px",
+              borderRadius: "18px",
               padding: "13px",
               fontSize: "14px",
-              fontWeight: 600,
+              fontWeight: 850,
               cursor: "pointer",
             }}>
               {saveSuccess ? t.savedToSchedule : t.saveToSchedule}
@@ -738,14 +688,14 @@ export default function WorkoutPage() {
                   width: "100%",
                   marginTop: "8px",
                   background: "#6bbfb8",
-                  color: "#ffffff",
+                  color: "#0b1715",
                   border: "none",
-                  borderRadius: "14px",
+                  borderRadius: "18px",
                   padding: "13px",
                   fontSize: "14px",
-                  fontWeight: 600,
+                  fontWeight: 900,
                   cursor: "pointer",
-                  boxShadow: "0 4px 16px rgba(107, 191, 184, 0.3)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.26)",
                 }}
               >
                 {t.goExercise}

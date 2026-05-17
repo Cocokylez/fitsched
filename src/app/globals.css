@@ -38,22 +38,22 @@ html {
 }
 
 :root {
-  --bg: #111514;
-  --surface: rgba(30, 35, 34, 0.78);
-  --surface-2: rgba(255, 255, 255, 0.055);
-  --surface-hover: rgba(255, 255, 255, 0.082);
-  --panel: rgba(18, 22, 21, 0.76);
-  --border: rgba(255, 255, 255, 0.085);
+  --bg: #0f1312;
+  --surface: rgba(31, 36, 35, 0.82);
+  --surface-2: rgba(255, 255, 255, 0.052);
+  --surface-hover: rgba(255, 255, 255, 0.084);
+  --panel: rgba(20, 25, 24, 0.9);
+  --border: rgba(255, 255, 255, 0.075);
   --border-strong: rgba(107, 191, 184, 0.28);
   --text: #f0f4f2;
-  --text-muted: #8d9996;
+  --text-muted: #929f9b;
   --accent: #6bbfb8;
   --accent-strong: #78d2cb;
   --accent-soft: rgba(107, 191, 184, 0.13);
   --danger: #f06c6c;
-  --shadow: 0 10px 34px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.035);
-  --shadow-md: 0 18px 56px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.045);
-  --shadow-lg: 0 28px 86px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+  --shadow: 0 12px 36px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.034);
+  --shadow-md: 0 20px 58px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.044);
+  --shadow-lg: 0 30px 88px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.052);
   --brand: var(--accent);
   --brand-bg: var(--accent-soft);
   --brand-bd: var(--border-strong);
@@ -77,12 +77,12 @@ html {
 }
 
 [data-theme='light'] {
-  --bg: #f5f7f6;
-  --surface: rgba(255, 255, 255, 0.78);
-  --surface-2: rgba(17, 24, 22, 0.055);
-  --surface-hover: rgba(17, 24, 22, 0.078);
-  --panel: rgba(255, 255, 255, 0.88);
-  --border: rgba(17, 24, 22, 0.09);
+  --bg: #f3f6f4;
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface-2: rgba(16, 24, 22, 0.05);
+  --surface-hover: rgba(16, 24, 22, 0.074);
+  --panel: rgba(255, 255, 255, 0.94);
+  --border: rgba(17, 24, 22, 0.082);
   --border-strong: rgba(62, 145, 138, 0.3);
   --text: #171c1b;
   --text-muted: #697471;
@@ -124,7 +124,8 @@ body {
   font-synthesis-weight: none;
   letter-spacing: -0.006em;
   background:
-    linear-gradient(180deg, rgba(107, 191, 184, 0.055), transparent 26rem),
+    radial-gradient(circle at 50% -12rem, rgba(107, 191, 184, 0.12), transparent 32rem),
+    linear-gradient(180deg, rgba(107, 191, 184, 0.035), transparent 26rem),
     var(--bg) !important;
   color: var(--text) !important;
 }
@@ -162,11 +163,11 @@ samp {
 .ios-inset-grouped {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 22px;
-  background: var(--panel);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 42%),
+    var(--panel);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
   transform: translateZ(0);
 }
 
@@ -379,13 +380,85 @@ textarea::placeholder {
 .dashboard-main {
   position: relative;
   z-index: 1;
-  padding-inline: clamp(0px, 2.2vw, 30px);
+  padding-inline: clamp(0px, 2vw, 28px);
 }
 
 .dashboard-main > div {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1080px;
   margin-inline: auto;
+}
+
+.dashboard-shell-bg {
+  background:
+    radial-gradient(circle at 18% -10%, rgba(107, 191, 184, 0.13), transparent 28rem),
+    radial-gradient(circle at 100% 18%, rgba(107, 191, 184, 0.055), transparent 22rem),
+    var(--bg);
+}
+
+.app-topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 64px;
+  margin: 12px 12px 0;
+  padding: 14px 16px 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), transparent),
+    color-mix(in srgb, var(--panel) 94%, transparent);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.icon-button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.day-pill {
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.quiet-card {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.026), transparent 46%),
+    var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.primary-action {
+  border: 0;
+  border-radius: 18px;
+  background: var(--accent);
+  color: #0b1715;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.26);
+  font-weight: 900;
+}
+
+.secondary-action {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 800;
 }
 
 [data-dashboard-scroll] {

@@ -332,7 +332,7 @@ export default function ExerciseSessionPage() {
           <button
             type="button"
             onClick={() => router.push("/workout")}
-            style={{ border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+            style={{ border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
           >
             {t.back}
           </button>
@@ -347,11 +347,12 @@ export default function ExerciseSessionPage() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
-              border: "1px solid rgba(107, 191, 184, 0.25)",
-              background: "linear-gradient(180deg, rgba(107,191,184,0.14), var(--surface))",
-              borderRadius: 22,
+              border: "1px solid rgba(107, 191, 184, 0.24)",
+              background: "linear-gradient(180deg, rgba(107,191,184,0.12), var(--panel))",
+              borderRadius: 26,
               padding: 14,
               marginBottom: 12,
+              boxShadow: "var(--shadow)",
             }}
           >
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 3 }}>
@@ -380,14 +381,14 @@ export default function ExerciseSessionPage() {
               <button
                 disabled={!resting}
                 onClick={skipRest}
-                style={{ border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", borderRadius: 13, padding: 12, fontWeight: 800, opacity: resting ? 1 : 0.45, cursor: resting ? "pointer" : "default" }}
+                style={{ border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", borderRadius: 16, padding: 12, fontWeight: 800, opacity: resting ? 1 : 0.45, cursor: resting ? "pointer" : "default" }}
               >
                 {t.skipRest}
               </button>
               <button
                 disabled={saving || resting || (!allDone && currentCompletedSets >= current.sets)}
                 onClick={allDone ? finishWorkout : completeCurrentSet}
-                style={{ border: "none", background: "#6bbfb8", color: "#fff", borderRadius: 13, padding: 13, fontWeight: 950, opacity: saving || resting || (!allDone && currentCompletedSets >= current.sets) ? 0.55 : 1, cursor: saving || resting || (!allDone && currentCompletedSets >= current.sets) ? "default" : "pointer" }}
+                style={{ border: "none", background: "#6bbfb8", color: "#0b1715", borderRadius: 16, padding: 13, fontWeight: 950, opacity: saving || resting || (!allDone && currentCompletedSets >= current.sets) ? 0.55 : 1, cursor: saving || resting || (!allDone && currentCompletedSets >= current.sets) ? "default" : "pointer", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.26)" }}
               >
                 {saving ? t.saving : allDone ? t.finishWorkout : resting ? t.resting : t.doneSet}
               </button>
@@ -395,7 +396,7 @@ export default function ExerciseSessionPage() {
           </motion.div>
         )}
 
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
+        <div style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 24, overflow: "hidden", boxShadow: "var(--shadow)" }}>
           {workout.exercises.map((exercise, index) => {
             const setsDone = completedSets[index] || 0
             const exerciseDone = setsDone >= exercise.sets
@@ -418,8 +419,8 @@ export default function ExerciseSessionPage() {
                   textAlign: "left",
                 }}
               >
-                <span style={{ width: 26, height: 26, borderRadius: "50%", display: "grid", placeItems: "center", background: exerciseDone ? "#6bbfb8" : "var(--surface-2)", color: exerciseDone ? "#fff" : "var(--text-muted)", fontSize: 12, fontWeight: 900 }}>
-                  {exerciseDone ? "✓" : index + 1}
+                <span style={{ width: 26, height: 26, borderRadius: "50%", display: "grid", placeItems: "center", background: exerciseDone ? "#6bbfb8" : "var(--surface-2)", color: exerciseDone ? "#0b1715" : "var(--text-muted)", fontSize: 11, fontWeight: 900 }}>
+                  {exerciseDone ? "OK" : index + 1}
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{exercise.name}</span>

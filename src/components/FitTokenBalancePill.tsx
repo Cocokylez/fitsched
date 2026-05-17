@@ -54,7 +54,7 @@ export function FitTokenBalancePill() {
   return (
     <div
       aria-label={`${displayBalance} FitTokens`}
-      className="motion-lift inline-flex h-9 min-w-[94px] shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--accent-soft)] px-3 text-[var(--accent-strong)] shadow-[var(--shadow)]"
+      className="motion-lift inline-flex h-9 min-w-[96px] shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--accent-soft)] px-3 text-[var(--accent-strong)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
     >
       <span className="brand-wordmark grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[var(--border-strong)] bg-[var(--panel)] text-[8px] font-black leading-none tracking-normal">
         FT

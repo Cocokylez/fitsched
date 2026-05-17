@@ -8,6 +8,7 @@ import { useStore } from "@/store/useStore"
 import { SkeletonCard } from "@/components/Skeleton"
 import { FitTokenBalancePill } from "@/components/FitTokenBalancePill"
 import { StreakWelcomeCard } from "@/components/StreakWelcomeCard"
+import { DashboardTopBar } from "@/components/DashboardTopBar"
 import { useLanguage } from "@/context/LanguageContext"
 import { useTheme } from "@/context/ThemeContext"
 import { getFeedbackAdjustedExperienceLevel } from "@/lib/workoutFeedback"
@@ -149,7 +150,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [weekDates, setWeekDates] = useState<Date[]>([])
   const { t, language } = useLanguage()
-  const { theme, toggleTheme } = useTheme()
+  const { theme } = useTheme()
   const dayNames = [t.days.sun, t.days.mon, t.days.tue, t.days.wed, t.days.thu, t.days.fri, t.days.sat]
   const [streak, setStreak] = useState(0)
   const [previousStreak, setPreviousStreak] = useState(0)
@@ -458,54 +459,16 @@ export default function SchedulePage() {
         style={{ flex: 1, display: "flex", flexDirection: "column" }}
       >
         <motion.div variants={fadeUp}>
-          <div style={{
-            background: "var(--panel)",
-            padding: "16px 20px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            border: "1px solid var(--border)",
-            borderRadius: "24px",
-            margin: "12px 12px 0",
-            boxShadow: "var(--shadow)",
-          }}>
-            <div className="brand-wordmark" style={{ fontSize: "15px", fontWeight: 900, color: "var(--text)" }}>{t.fitSched}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <FitTokenBalancePill />
-              <button
-                onClick={toggleTheme}
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "50%",
-                  width: "32px",
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  color: "var(--text)",
-                }}
-              >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  {theme === "dark" ? (
-                    <>
-                      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </>
-                  ) : (
-                    <><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>
-                  )}
-                </svg>
-              </button>
-            </div>
-          </div>
+          <DashboardTopBar title={t.fitSched}>
+            <FitTokenBalancePill />
+          </DashboardTopBar>
         </motion.div>
 
-        <div data-dashboard-scroll style={{ padding: "20px", flex: 1, overflowY: "auto", paddingBottom: "100px" }}>
+        <div data-dashboard-scroll style={{ padding: "22px 20px", flex: 1, overflowY: "auto", paddingBottom: "108px" }}>
           <motion.div variants={stagger} initial="hidden" animate="visible">
             <motion.div variants={fadeUp}>
-              <div style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "2px" }}>{getTimeGreeting(language)}</div>
-              <div className="display-text" style={{ fontSize: "31px", fontWeight: 900, color: "var(--text)", lineHeight: 1.04, marginBottom: "14px" }}>{t.yourDay}</div>
+              <div style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>{getTimeGreeting(language)}</div>
+              <div className="display-text" style={{ fontSize: "34px", fontWeight: 900, color: "var(--text)", lineHeight: 0.98, marginBottom: "18px" }}>{t.yourDay}</div>
               <StreakWelcomeCard
                 streak={streak}
                 previousStreak={previousStreak}
@@ -522,16 +485,16 @@ export default function SchedulePage() {
                     onClick={() => setSelectedDay(i)}
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: "spring", stiffness: 360, damping: 24 }}
+                    className="day-pill"
                     style={{
                       background: i === selectedDay ? "var(--accent)" : "var(--panel)",
                       border: i === selectedDay ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      borderRadius: "18px",
-                      padding: "10px 14px",
+                      padding: "11px 15px",
                       textAlign: "center",
-                      minWidth: "52px",
+                      minWidth: "56px",
                       cursor: "pointer",
                       flexShrink: 0,
-                      boxShadow: i === selectedDay ? "inset 0 1px 0 rgba(255, 255, 255, 0.24)" : "none",
+                      boxShadow: i === selectedDay ? "inset 0 1px 0 rgba(255, 255, 255, 0.24)" : "var(--shadow)",
                     }}
                   >
                     <div style={{
@@ -544,8 +507,8 @@ export default function SchedulePage() {
                       {dayNames[i]}
                     </div>
                     <div style={{
-                      fontSize: "18px",
-                      fontWeight: 800,
+                      fontSize: "19px",
+                      fontWeight: 900,
                       color: i === selectedDay ? "#0b1715" : "var(--text)",
                     }}>
                       {date.getDate()}
@@ -597,8 +560,8 @@ export default function SchedulePage() {
                 <div style={{
                   background: "var(--panel)",
                   border: "1px dashed var(--border)",
-                  borderRadius: "20px",
-                  padding: "24px",
+                  borderRadius: "24px",
+                  padding: "28px 24px",
                   textAlign: "center",
                   boxShadow: "var(--shadow)",
                 }}>
@@ -625,7 +588,7 @@ export default function SchedulePage() {
                   const actionWidth = canEdit ? 172 : 86
                   return (
                     <motion.div key={block.id || `${block.label}-${i}`} variants={fadeUp}>
-                      <div style={{ position: "relative", marginBottom: "12px", overflow: "hidden", borderRadius: "20px" }}>
+                      <div style={{ position: "relative", marginBottom: "12px", overflow: "hidden", borderRadius: "24px" }}>
                         {canDelete && (
                           <div
                             style={{
@@ -693,13 +656,13 @@ export default function SchedulePage() {
                           onPointerLeave={handlePressEnd}
                           animate={{ x: deleteOpen ? -(actionWidth + 6) : 0 }}
                           transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                          className="motion-lift"
+                          className="motion-lift quiet-card"
                           style={{
                             background: "var(--panel)",
                             border: "1px solid var(--border)",
                             borderLeft: isWorkout ? "3px solid var(--accent)" : "3px solid rgba(141,153,150,0.42)",
-                            borderRadius: "20px",
-                            padding: "15px 17px",
+                            borderRadius: "24px",
+                            padding: "16px 18px",
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
