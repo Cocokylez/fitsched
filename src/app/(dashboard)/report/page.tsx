@@ -316,27 +316,31 @@ export default function ReportPage() {
                 style={{ background: "radial-gradient(ellipse at 15% -10%, rgba(107,191,184,0.14), transparent 55%)" }}
               />
 
-              <div className="relative px-5 pb-4 pt-5">
+              <div className="relative px-6 pb-4 pt-5">
                 {/* Flame icon top-right */}
-                <div className="absolute right-3 top-2 opacity-75" style={{ filter: "saturate(1.1) brightness(1.05)" }}>
-                  <FlameIcon size={64} />
+                <div className="absolute right-4 top-3 opacity-80" style={{ filter: "saturate(1.15) brightness(1.08)" }}>
+                  <FlameIcon size={60} />
                 </div>
 
                 <div className="mb-1 text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(107,191,184,0.68)" }}>
                   Current Streak
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="number-text text-[58px] font-black leading-none text-white">{streak?.streak ?? 0}</span>
-                  <span className="text-[19px] font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>days</span>
+                  <span className="number-text text-[56px] font-black leading-none text-white">{streak?.streak ?? 0}</span>
+                  <span className="text-[18px] font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    {(streak?.streak ?? 0) === 1 ? "day" : "days"}
+                  </span>
                 </div>
                 <div className="mt-2 text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.42)" }}>
                   Personal best ·{" "}
-                  <span className="font-black" style={{ color: "rgba(107,191,184,0.88)" }}>{longestStreak} days</span>
+                  <span className="font-black" style={{ color: "rgba(107,191,184,0.88)" }}>
+                    {longestStreak} {longestStreak === 1 ? "day" : "days"}
+                  </span>
                 </div>
               </div>
 
               {/* Week strip */}
-              <div className="px-4 pb-5 pt-3" style={{ borderTop: "1px solid rgba(107,191,184,0.12)" }}>
+              <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid rgba(107,191,184,0.12)" }}>
                 <div className="grid grid-cols-7 gap-1.5">
                   {weekDays.map((day, i) => {
                     const dateId = toDateId(day)
