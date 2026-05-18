@@ -303,48 +303,53 @@ export default function ReportPage() {
           </motion.div>
         ) : (
           <div className="grid gap-4">
-            <motion.section variants={fadeUp} className="ios-inset-grouped p-4 min-[420px]:p-5">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[15px] font-black text-[var(--text)]">Weekly pulse</div>
-                  <div className="mt-1 text-xs text-[var(--text-muted)]">Training consistency without cluttering Profile.</div>
-                </div>
-                <ReportGlyph kind="week" />
-              </div>
-
-              <div className="mb-4 grid grid-cols-7 gap-1">
-                {weekDays.map((day) => {
-                  const dateId = toDateId(day)
-                  const active = dateId === toDateId(new Date())
-                  const completed = completedDates.has(dateId)
-                  return (
-                    <div
-                      key={dateId}
-                      className={`grid min-h-[42px] place-items-center rounded-[15px] border text-[13px] font-black ${
-                        active
-                          ? "border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]"
-                          : completed
-                            ? "border-[rgba(107,191,184,0.18)] bg-[rgba(107,191,184,0.07)] text-[var(--text)]"
-                            : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]"
-                      }`}
-                    >
-                      {day.getDate()}
+            <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden">
+              {/* R1: streak hero */}
+              <div className="relative px-5 pb-5 pt-5">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(107,191,184,0.1),transparent_60%)]" />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div>
+                    <div className="mb-0.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                      <Flame size={12} className="text-[#e8842a]" />
+                      Current streak
                     </div>
-                  )
-                })}
+                    <div className="number-text flex items-baseline gap-2">
+                      <span className="text-[52px] font-black leading-none text-[var(--text)]">{streak?.streak || 0}</span>
+                      <span className="text-[17px] font-bold text-[var(--text-muted)]">days</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Personal best</div>
+                    <div className="number-text flex items-baseline justify-end gap-1.5">
+                      <span className="text-[28px] font-black leading-none text-[var(--text)]">{longestStreak}</span>
+                      <span className="text-[13px] font-bold text-[var(--text-muted)]">days</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-4">
-                <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-3">
-                  <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                    <Flame size={13} className="text-[#e8842a]" />
-                    Day streak
-                  </div>
-                  <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">{streak?.streak || 0}</div>
-                </div>
-                <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-3">
-                  <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">Personal best</div>
-                  <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">{longestStreak}<span className="ml-1 text-base text-[var(--text-muted)]">days</span></div>
+              {/* Week strip */}
+              <div className="border-t border-[var(--border)] px-4 py-4 min-[420px]:px-5">
+                <div className="grid grid-cols-7 gap-1">
+                  {weekDays.map((day) => {
+                    const dateId = toDateId(day)
+                    const active = dateId === toDateId(new Date())
+                    const completed = completedDates.has(dateId)
+                    return (
+                      <div
+                        key={dateId}
+                        className={`grid min-h-[44px] place-items-center rounded-[15px] border text-[13px] font-black ${
+                          active
+                            ? "border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]"
+                            : completed
+                              ? "border-[rgba(107,191,184,0.18)] bg-[rgba(107,191,184,0.07)] text-[var(--text)]"
+                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]"
+                        }`}
+                      >
+                        {day.getDate()}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </motion.section>
