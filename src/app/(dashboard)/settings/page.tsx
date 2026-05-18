@@ -316,7 +316,7 @@ export default function SettingsPage() {
     if (permission === "granted") {
       setPushEnabled(true)
       try {
-        const registration = await navigator.serviceWorker.register("/sw.js")
+        const registration = await navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ""),

@@ -11,8 +11,8 @@ const contentSecurityPolicy = [
   "frame-ancestors 'self'",
   "form-action 'self'",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com",
   "connect-src 'self' https://*.googleapis.com https://accounts.google.com",
   "frame-src https://accounts.google.com",
@@ -35,10 +35,35 @@ const securityHeaders = [
     : []),
 ];
 
+const noStoreHeaders = [
+  { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
+];
+
+const appPageSources = [
+  "/",
+  "/login",
+  "/register",
+  "/schedule",
+  "/workout",
+  "/exercise",
+  "/exercises",
+  "/history",
+  "/hike",
+  "/onboarding",
+  "/report",
+  "/settings",
+  "/withdrawal",
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/sw.js", headers: noStoreHeaders },
+      { source: "/manifest.json", headers: noStoreHeaders },
+      ...appPageSources.map((source) => ({ source, headers: noStoreHeaders })),
+    ];
   },
 };
 
