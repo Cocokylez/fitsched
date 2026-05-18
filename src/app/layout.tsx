@@ -5,7 +5,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 
 const syne = Syne({
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
+  weight: ["600", "700", "800"],
   variable: "--font-syne",
   display: "swap",
 });
