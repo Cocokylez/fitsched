@@ -305,6 +305,11 @@ textarea::placeholder {
   100% { background-position: 200% 0; }
 }
 
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .animate-fadeUp {
   animation: iosFadeUp 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
