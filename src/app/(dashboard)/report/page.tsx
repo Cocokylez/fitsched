@@ -4,8 +4,9 @@ import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Activity, Flame, PencilLine, Ruler, Save, Scale, ShieldCheck } from "lucide-react"
+import { Activity, Check, PencilLine, Ruler, Save, Scale, ShieldCheck } from "lucide-react"
 import { SkeletonCard } from "@/components/Skeleton"
+import FlameIcon from "@/components/FlameIcon"
 
 type WorkoutLog = {
   id: string
@@ -35,6 +36,8 @@ const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.34, ease: "easeOut" as const } },
 }
+
+const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"]
 
 const muscleMap: Record<string, string> = {
   "Push-ups": "Chest",
@@ -166,34 +169,6 @@ function getTopMuscles(logs: WorkoutLog[]) {
     .map(([group, count]) => ({ group, pct: total ? Math.round((count / total) * 100) : 0 }))
 }
 
-function ReportGlyph({ kind }: { kind: "body" | "week" | "bmi" }) {
-  if (kind === "week") {
-    return (
-      <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
-        <rect x="8" y="13" width="32" height="25" rx="8" stroke="currentColor" strokeWidth="2" />
-        <path d="M15 10v7M33 10v7M14 24h5M22 24h5M30 24h5M14 31h5M22 31h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    )
-  }
-
-  if (kind === "bmi") {
-    return (
-      <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
-        <path d="M12 35c2.5-9 6.5-14 12-14s9.5 5 12 14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        <path d="M24 21l7-8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        <circle cx="24" cy="24" r="15" stroke="currentColor" strokeWidth="2" opacity=".42" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
-      <path d="M24 8c5.5 0 9 4.2 9 10.3 0 4.4-2 8.1-4.5 11.4L24 36l-4.5-6.3C17 26.4 15 22.7 15 18.3 15 12.2 18.5 8 24 8Z" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M19 22h10M21 27h6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 export default function ReportPage() {
   const { status } = useSession()
   const router = useRouter()
@@ -250,7 +225,14 @@ export default function ReportPage() {
   const longestStreak = useMemo(() => calculateLongestStreak(logs), [logs])
   const topMuscles = useMemo(() => getTopMuscles(logs), [logs])
   const totalExercises = logs.reduce((sum, log) => sum + log.exercises.length, 0)
-  const weekDays = Array.from({ length: 7 }, (_, index) => addDays(new Date(), index - 3))
+
+  // Current week Mon–Sun
+  const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d }, [])
+  const weekDays = useMemo(() => {
+    const dow = today.getDay()
+    const monday = addDays(today, -((dow + 6) % 7))
+    return Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+  }, [today])
   const completedDates = new Set(logs.map((log) => log.date))
 
   const saveMetrics = async (event: FormEvent<HTMLFormElement>) => {
@@ -285,68 +267,103 @@ export default function ReportPage() {
   return (
     <div className="min-h-dvh bg-transparent px-4 pb-[118px] pt-8 sm:px-6">
       <motion.div initial="hidden" animate="visible" className="mx-auto w-full max-w-[640px]">
-        <motion.header variants={fadeUp} className="mb-7 flex items-end justify-between gap-4">
-          <div className="min-w-0">
-            <p className="label-text mb-2 text-[10px] text-[var(--text-muted)]">Body intelligence</p>
-            <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
-          </div>
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)] shadow-[var(--shadow)]">
-            <ReportGlyph kind="body" />
-          </div>
+        <motion.header variants={fadeUp} className="mb-7">
+          <p className="label-text mb-2 text-[10px] text-[var(--text-muted)]">Body intelligence</p>
+          <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
         </motion.header>
 
         {loading ? (
           <motion.div variants={fadeUp} className="grid gap-4">
-            <SkeletonCard height="120px" />
             <SkeletonCard height="160px" />
+            <SkeletonCard height="100px" />
             <SkeletonCard height="160px" />
           </motion.div>
         ) : (
           <div className="grid gap-4">
-            <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden">
-              {/* R1: streak hero */}
-              <div className="relative px-5 pb-5 pt-5">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(107,191,184,0.1),transparent_60%)]" />
-                <div className="relative flex items-start justify-between gap-4">
-                  <div>
-                    <div className="mb-0.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                      <Flame size={12} className="text-[#e8842a]" />
-                      Current streak
-                    </div>
-                    <div className="number-text flex items-baseline gap-2">
-                      <span className="text-[52px] font-black leading-none text-[var(--text)]">{streak?.streak || 0}</span>
-                      <span className="text-[17px] font-bold text-[var(--text-muted)]">days</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Personal best</div>
-                    <div className="number-text flex items-baseline justify-end gap-1.5">
-                      <span className="text-[28px] font-black leading-none text-[var(--text)]">{longestStreak}</span>
-                      <span className="text-[13px] font-bold text-[var(--text-muted)]">days</span>
-                    </div>
-                  </div>
+
+            {/* R1 Streak hero card */}
+            <motion.section
+              variants={fadeUp}
+              className="relative overflow-hidden rounded-[24px]"
+              style={{
+                background: "linear-gradient(145deg, rgba(38,76,68,0.97) 0%, rgba(18,38,34,0.99) 100%)",
+                border: "1px solid rgba(107,191,184,0.2)",
+                boxShadow: "0 4px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(107,191,184,0.1)",
+              }}
+            >
+              {/* Subtle glow overlay */}
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: "radial-gradient(ellipse at 15% -10%, rgba(107,191,184,0.14), transparent 55%)" }}
+              />
+
+              <div className="relative px-5 pb-4 pt-5">
+                {/* Flame icon top-right */}
+                <div className="absolute right-3 top-2 opacity-75" style={{ filter: "saturate(1.1) brightness(1.05)" }}>
+                  <FlameIcon size={64} />
+                </div>
+
+                <div className="mb-1 text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(107,191,184,0.68)" }}>
+                  Current Streak
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="number-text text-[58px] font-black leading-none text-white">{streak?.streak ?? 0}</span>
+                  <span className="text-[19px] font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>days</span>
+                </div>
+                <div className="mt-2 text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.42)" }}>
+                  Personal best ·{" "}
+                  <span className="font-black" style={{ color: "rgba(107,191,184,0.88)" }}>{longestStreak} days</span>
                 </div>
               </div>
 
               {/* Week strip */}
-              <div className="border-t border-[var(--border)] px-4 py-4 min-[420px]:px-5">
-                <div className="grid grid-cols-7 gap-1">
-                  {weekDays.map((day) => {
+              <div className="px-4 pb-5 pt-3" style={{ borderTop: "1px solid rgba(107,191,184,0.12)" }}>
+                <div className="grid grid-cols-7 gap-1.5">
+                  {weekDays.map((day, i) => {
                     const dateId = toDateId(day)
-                    const active = dateId === toDateId(new Date())
+                    const isToday = dateId === toDateId(today)
                     const completed = completedDates.has(dateId)
+                    const isPast = day < today && !isToday
                     return (
-                      <div
-                        key={dateId}
-                        className={`grid min-h-[44px] place-items-center rounded-[15px] border text-[13px] font-black ${
-                          active
-                            ? "border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]"
-                            : completed
-                              ? "border-[rgba(107,191,184,0.18)] bg-[rgba(107,191,184,0.07)] text-[var(--text)]"
-                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]"
-                        }`}
-                      >
-                        {day.getDate()}
+                      <div key={dateId} className="flex flex-col items-center gap-1.5">
+                        <span
+                          className="text-[9px] font-black uppercase"
+                          style={{ color: isToday ? "rgba(107,191,184,0.9)" : "rgba(255,255,255,0.32)" }}
+                        >
+                          {DAY_LETTERS[i]}
+                        </span>
+                        <div
+                          className="flex h-9 w-full items-center justify-center rounded-[12px]"
+                          style={{
+                            background: isToday
+                              ? "rgba(107,191,184,0.92)"
+                              : completed
+                                ? "rgba(107,191,184,0.2)"
+                                : isPast
+                                  ? "rgba(255,255,255,0.04)"
+                                  : "rgba(255,255,255,0.06)",
+                            border: isToday
+                              ? "none"
+                              : completed
+                                ? "1px solid rgba(107,191,184,0.28)"
+                                : "1px solid rgba(255,255,255,0.07)",
+                          }}
+                        >
+                          {isToday || completed ? (
+                            <Check
+                              size={14}
+                              strokeWidth={3}
+                              style={{ color: isToday ? "#0b1715" : "rgba(107,191,184,0.9)" }}
+                            />
+                          ) : (
+                            <span
+                              className="text-[12px] font-black"
+                              style={{ color: isPast ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.38)" }}
+                            >
+                              {day.getDate()}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )
                   })}
@@ -354,6 +371,7 @@ export default function ReportPage() {
               </div>
             </motion.section>
 
+            {/* Stats row */}
             <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
               <div className="ios-inset-grouped p-4">
                 <div className="mb-3 flex items-center gap-2">
@@ -375,22 +393,26 @@ export default function ReportPage() {
                   </div>
                   <span className="text-[11px] font-extrabold uppercase tracking-[0.09em] text-[var(--text-muted)]">Sessions</span>
                 </div>
-                <div className="number-text text-[30px] font-black leading-none text-[var(--text)]">{logs.length}</div>
+                <div className="number-text flex items-baseline gap-0.5 leading-none">
+                  <span className="text-[30px] font-black text-[var(--text)]">{logs.length}</span>
+                  {profile?.workoutsPerWeek ? (
+                    <>
+                      <span className="text-[20px] font-bold text-[var(--text-muted)]">/</span>
+                      <span className="text-[20px] font-bold text-[var(--text-muted)]">{profile.workoutsPerWeek}</span>
+                    </>
+                  ) : null}
+                </div>
                 <div className="mt-1.5 text-[11px] font-semibold text-[var(--text-muted)]">{totalExercises} exercises</div>
               </div>
             </motion.section>
 
+            {/* BMI */}
             <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden p-4 min-[420px]:p-5">
-              <div className="mb-5 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[15px] font-black text-[var(--text)]">BMI</div>
-                  <div className="mt-1 text-xs text-[var(--text-muted)]">Used as context, not a judgment.</div>
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <div className="mb-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">BMI</div>
+                  <div className="number-text text-[42px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</div>
                 </div>
-                <ReportGlyph kind="bmi" />
-              </div>
-
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                <div className="number-text text-[42px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</div>
                 <div className="mb-1 flex items-center gap-2 text-sm font-extrabold" style={{ color: bmiStatus.color }}>
                   <span className="h-3 w-3 rounded-full" style={{ background: bmiStatus.color }} />
                   {bmiStatus.label}
@@ -416,6 +438,8 @@ export default function ReportPage() {
                   <span>40</span>
                 </div>
               </div>
+
+              <div className="text-[11px] text-[var(--text-muted)] mb-5">Used as context, not a judgment.</div>
 
               <form onSubmit={saveMetrics} className="grid gap-3 border-t border-[var(--border)] pt-5">
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -501,8 +525,13 @@ export default function ReportPage() {
               </form>
             </motion.section>
 
+            {/* Most trained */}
             <motion.section variants={fadeUp} className="ios-inset-grouped p-5">
-              <div className="mb-4 text-[15px] font-black text-[var(--text)]">Most trained</div>
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Most Trained</span>
+                <span className="text-[10px] text-[var(--text-muted)]">·</span>
+                <span className="text-[10px] font-bold text-[var(--text-muted)]">last 30 days</span>
+              </div>
               {topMuscles.length > 0 ? (
                 <div className="grid gap-3">
                   {topMuscles.map((muscle, index) => (
@@ -523,11 +552,15 @@ export default function ReportPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm font-semibold text-[var(--text-muted)]">
-                  Complete a workout and your strongest patterns will appear here.
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center">
+                  <div className="grid h-12 w-12 place-items-center rounded-[16px] border border-[var(--border)] bg-[var(--panel)] text-[var(--text-muted)]">
+                    <Activity size={22} />
+                  </div>
+                  <p className="text-sm font-semibold text-[var(--text-muted)]">Complete a workout to see your patterns here.</p>
                 </div>
               )}
             </motion.section>
+
           </div>
         )}
       </motion.div>
