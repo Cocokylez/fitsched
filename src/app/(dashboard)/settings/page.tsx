@@ -345,11 +345,11 @@ export default function SettingsPage() {
               {/* Ring + avatar */}
               <div className="relative mb-3">
                 <svg width="116" height="116" viewBox="0 0 116 116" fill="none" aria-hidden="true" className="absolute inset-0">
-                  <circle cx="58" cy="58" r="54" stroke="rgba(107,191,184,0.18)" strokeWidth="2.5" />
-                  <circle cx="58" cy="58" r="54" stroke="#6bbfb8" strokeWidth="2.5"
-                    strokeDasharray="280 60" strokeLinecap="round"
-                    strokeDashoffset="72"
-                    style={{ filter: "drop-shadow(0 0 6px rgba(107,191,184,0.5))" }}
+                  <circle cx="58" cy="58" r="54" stroke="rgba(107,191,184,0.15)" strokeWidth="3" />
+                  <circle cx="58" cy="58" r="54" stroke="#6bbfb8" strokeWidth="3"
+                    strokeDasharray="285 55" strokeLinecap="round"
+                    strokeDashoffset="70"
+                    style={{ filter: "drop-shadow(0 0 8px rgba(107,191,184,0.7))" }}
                   />
                 </svg>
                 <div className="relative m-[8px] flex h-[100px] w-[100px] items-center justify-center rounded-full text-white"
@@ -395,7 +395,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/withdrawal")}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[13px] font-bold text-[var(--text)] transition-colors active:bg-[var(--surface)]"
+                  className="rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-4 py-2 text-[13px] font-bold text-[var(--text)] transition-colors active:bg-[var(--surface)]"
                 >
                   Withdraw
                 </button>
@@ -407,17 +407,17 @@ export default function SettingsPage() {
               <div className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
                 By the numbers
               </div>
-              <div className="overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
+              <div className="ios-inset-grouped overflow-hidden p-0">
                 {statRows.map((row, i) => (
                   <div
                     key={row.label}
-                    className={`flex items-center justify-between px-5 py-4 ${i < statRows.length - 1 ? "border-b border-[var(--border)]" : ""}`}
+                    className={`flex items-center justify-between px-5 py-[14px] ${i < statRows.length - 1 ? "border-b border-[var(--border)]" : ""}`}
                   >
                     <div>
-                      <div className="text-[15px] font-bold text-[var(--text)]">{row.label}</div>
+                      <div className="text-[14px] font-semibold text-[var(--text)]">{row.label}</div>
                       <div className="mt-0.5 text-[12px] text-[var(--text-muted)]">{row.sub}</div>
                     </div>
-                    <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">
+                    <div className="number-text text-[22px] font-black leading-none text-[var(--text)]">
                       <AnimatedNumber value={row.value} suffix={row.suffix} />
                     </div>
                   </div>
@@ -430,7 +430,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => router.push("/report")}
-                className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4 text-left transition-colors active:bg-[var(--surface)]"
+                className="ios-inset-grouped flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
               >
                 <span className="flex items-center gap-3 min-w-0">
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border border-[var(--border-strong)] bg-[var(--accent-soft)]" style={{ color: ACCENT }}>
@@ -450,7 +450,7 @@ export default function SettingsPage() {
               <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
                 FitToken Earnings
               </div>
-              <div className="overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
+              <div className="ios-inset-grouped overflow-hidden p-0">
                 {fitTokens.transactions.length > 0 ? (
                   fitTokens.transactions.map((tx, i) => (
                     <div
@@ -483,7 +483,7 @@ export default function SettingsPage() {
               <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
                 {t.calendar}
               </div>
-              <div className="rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4">
+              <div className="ios-inset-grouped px-5 py-4">
                 {isCalendarConnected ? (
                   <>
                     <div className="text-[14px] font-semibold text-[var(--text)]">{t.googleConnected}</div>
@@ -517,7 +517,7 @@ export default function SettingsPage() {
               <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
                 {t.preferences}
               </div>
-              <div className="rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4">
+              <div className="ios-inset-grouped px-5 py-4">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[14px] font-bold text-[var(--text)]">{t.workoutSetup}</div>
@@ -554,7 +554,7 @@ export default function SettingsPage() {
             </motion.div>
 
             {/* Push + Language + Version */}
-            <motion.div variants={fadeUp} className="mt-3 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
+            <motion.div variants={fadeUp} className="mt-3 overflow-hidden ios-inset-grouped">
               <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
                 <div>
                   <div className="text-[14px] font-semibold text-[var(--text)]">{t.pushNotifications}</div>
