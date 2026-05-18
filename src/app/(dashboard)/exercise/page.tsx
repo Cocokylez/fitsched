@@ -314,8 +314,9 @@ export default function ExerciseSessionPage() {
             <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>{t.noWorkoutLoaded}</div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 18 }}>{t.noWorkoutLoadedBody}</div>
             <button
+              type="button"
               onClick={() => router.push("/workout")}
-              style={{ border: "none", borderRadius: 14, padding: "13px 18px", background: "var(--text)", color: "var(--bg)", fontWeight: 800, cursor: "pointer" }}
+              style={{ border: "none", borderRadius: 14, padding: "13px 18px", background: "var(--accent)", color: "#0b1715", fontWeight: 800, cursor: "pointer", boxShadow: "0 0 20px rgba(107,191,184,0.2)" }}
             >
               {t.backToWorkout}
             </button>

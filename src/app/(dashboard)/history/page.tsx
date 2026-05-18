@@ -205,9 +205,11 @@ export default function HistoryPage() {
                     </motion.div>
                   ))}
                   {logs.length === 0 && (
-                    <div className="px-4 py-8 text-center">
-                      <Dumbbell className="w-8 h-8 text-[var(--t3)] mx-auto mb-2" />
-                      <p className="text-[14px] text-[var(--t3)]">{t.noWorkouts}</p>
+                    <div className="px-4 py-10 text-center">
+                      <div className="mx-auto mb-3.5 grid h-14 w-14 place-items-center rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--t3)]">
+                        <Dumbbell className="w-6 h-6" />
+                      </div>
+                      <p className="text-[14px] font-semibold text-[var(--t3)]">{t.noWorkouts}</p>
                     </div>
                   )}
                 </div>

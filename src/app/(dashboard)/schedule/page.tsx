@@ -13,6 +13,7 @@ import { useLanguage } from "@/context/LanguageContext"
 import { useTheme } from "@/context/ThemeContext"
 import { getFeedbackAdjustedExperienceLevel } from "@/lib/workoutFeedback"
 import { getSmartExercisePlan, toWorkoutExercises } from "@/lib/workoutRecommendations"
+import { CalendarX2 } from "lucide-react"
 
 const stagger = {
   hidden: {},
@@ -559,18 +560,29 @@ export default function SchedulePage() {
               <motion.div variants={fadeUp}>
                 <div style={{
                   background: "var(--panel)",
-                  border: "1px dashed var(--border)",
+                  border: "1px solid var(--border)",
                   borderRadius: "24px",
-                  padding: "28px 24px",
+                  padding: "32px 24px",
                   textAlign: "center",
                   boxShadow: "var(--shadow)",
                 }}>
-                  <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)" }}>
+                  <div style={{
+                    width: 52, height: 52,
+                    borderRadius: 16,
+                    background: "var(--accent-soft)",
+                    border: "1px solid var(--border-strong)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    margin: "0 auto 14px",
+                    color: "var(--accent-strong)",
+                  }}>
+                    <CalendarX2 size={24} strokeWidth={1.7} />
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>
                     <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                       {t.noEvents}
                     </motion.span>
                   </div>
-                  <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                  <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "5px" }}>
                     <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                       {t.clearDay}
                     </motion.span>
@@ -895,12 +907,13 @@ export default function SchedulePage() {
                   border: "none",
                   borderRadius: "14px",
                   padding: "14px",
-                  background: "var(--text)",
-                  color: "var(--bg)",
+                  background: "var(--accent)",
+                  color: "#0b1715",
                   fontSize: "14px",
                   fontWeight: 900,
                   cursor: manualTitle.trim() && !savingManual ? "pointer" : "default",
-                  opacity: manualTitle.trim() && !savingManual ? 1 : 0.5,
+                  opacity: manualTitle.trim() && !savingManual ? 1 : 0.45,
+                  boxShadow: "0 0 20px rgba(107,191,184,0.18)",
                 }}
               >
                 {savingManual ? (editingBlockId ? t.saving : t.adding) : (editingBlockId ? t.saveChanges : t.addToSchedule)}

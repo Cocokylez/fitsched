@@ -654,14 +654,15 @@ export default function WorkoutPage() {
             }} style={{
               width: "100%",
               marginTop: "12px",
-              background: "var(--surface-2)",
-              color: "var(--text)",
-              border: "1px solid var(--border)",
+              background: saveSuccess ? "var(--accent-soft)" : "var(--accent)",
+              color: saveSuccess ? "var(--accent-strong)" : "#0b1715",
+              border: saveSuccess ? "1px solid var(--border-strong)" : "none",
               borderRadius: "18px",
               padding: "13px",
               fontSize: "14px",
               fontWeight: 850,
               cursor: "pointer",
+              boxShadow: saveSuccess ? "none" : "0 0 20px rgba(107,191,184,0.2)",
             }}>
               {saveSuccess ? t.savedToSchedule : t.saveToSchedule}
             </button>
@@ -687,7 +688,7 @@ export default function WorkoutPage() {
                 style={{
                   width: "100%",
                   marginTop: "8px",
-                  background: "#6bbfb8",
+                  background: "var(--accent)",
                   color: "#0b1715",
                   border: "none",
                   borderRadius: "18px",
@@ -695,7 +696,7 @@ export default function WorkoutPage() {
                   fontSize: "14px",
                   fontWeight: 900,
                   cursor: "pointer",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.26)",
+                  boxShadow: "0 0 24px rgba(107,191,184,0.22), inset 0 1px 0 rgba(255,255,255,0.22)",
                 }}
               >
                 {t.goExercise}
