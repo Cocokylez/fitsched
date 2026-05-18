@@ -305,15 +305,17 @@ export default function ReportPage() {
               variants={fadeUp}
               className="relative overflow-hidden rounded-[24px]"
               style={{
-                background: "linear-gradient(145deg, rgba(38,76,68,0.97) 0%, rgba(18,38,34,0.99) 100%)",
-                border: "1px solid rgba(107,191,184,0.2)",
-                boxShadow: "0 4px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(107,191,184,0.1)",
+                background: "linear-gradient(145deg, #1e4a42 0%, #0f2420 100%)",
+                border: "1px solid rgba(107,191,184,0.24)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.06) inset, 0 24px 56px rgba(0,0,0,0.4), 0 1px 0 rgba(107,191,184,0.18) inset",
               }}
             >
-              {/* Subtle glow overlay */}
+              {/* Top edge refraction */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(107,191,184,0.5), transparent)" }} />
+              {/* Glow */}
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(ellipse at 15% -10%, rgba(107,191,184,0.14), transparent 55%)" }}
+                style={{ background: "radial-gradient(ellipse at 20% -20%, rgba(107,191,184,0.18), transparent 60%)" }}
               />
 
               <div className="relative px-6 pb-4 pt-5">
@@ -322,25 +324,25 @@ export default function ReportPage() {
                   <FlameIcon size={60} />
                 </div>
 
-                <div className="mb-1 text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(107,191,184,0.68)" }}>
+                <div className="mb-1 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "#6bbfb8" }}>
                   Current Streak
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="number-text text-[56px] font-black leading-none text-white">{streak?.streak ?? 0}</span>
-                  <span className="text-[18px] font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  <span className="number-text text-[56px] font-black leading-none" style={{ color: "#ffffff" }}>{streak?.streak ?? 0}</span>
+                  <span className="text-[18px] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>
                     {(streak?.streak ?? 0) === 1 ? "day" : "days"}
                   </span>
                 </div>
-                <div className="mt-2 text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.42)" }}>
+                <div className="mt-2 text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.48)" }}>
                   Personal best ·{" "}
-                  <span className="font-black" style={{ color: "rgba(107,191,184,0.88)" }}>
+                  <span className="font-black" style={{ color: "#6bbfb8" }}>
                     {longestStreak} {longestStreak === 1 ? "day" : "days"}
                   </span>
                 </div>
               </div>
 
               {/* Week strip */}
-              <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid rgba(107,191,184,0.12)" }}>
+              <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid rgba(107,191,184,0.2)" }}>
                 <div className="grid grid-cols-7 gap-1.5">
                   {weekDays.map((day, i) => {
                     const dateId = toDateId(day)
@@ -350,38 +352,37 @@ export default function ReportPage() {
                     return (
                       <div key={dateId} className="flex flex-col items-center gap-1.5">
                         <span
-                          className="text-[9px] font-black uppercase"
-                          style={{ color: isToday ? "rgba(107,191,184,0.9)" : "rgba(255,255,255,0.32)" }}
+                          className="text-[9px] font-black uppercase tracking-wider"
+                          style={{ color: isToday ? "#6bbfb8" : "rgba(255,255,255,0.35)" }}
                         >
                           {DAY_LETTERS[i]}
                         </span>
                         <div
-                          className="flex h-9 w-full items-center justify-center rounded-[12px]"
+                          className="flex h-9 w-full items-center justify-center rounded-[11px]"
                           style={{
                             background: isToday
-                              ? "rgba(107,191,184,0.92)"
+                              ? "#6bbfb8"
                               : completed
-                                ? "rgba(107,191,184,0.2)"
-                                : isPast
-                                  ? "rgba(255,255,255,0.04)"
-                                  : "rgba(255,255,255,0.06)",
+                                ? "rgba(107,191,184,0.22)"
+                                : "rgba(255,255,255,0.05)",
                             border: isToday
                               ? "none"
                               : completed
-                                ? "1px solid rgba(107,191,184,0.28)"
-                                : "1px solid rgba(255,255,255,0.07)",
+                                ? "1px solid rgba(107,191,184,0.35)"
+                                : "1px solid rgba(255,255,255,0.08)",
+                            boxShadow: isToday ? "0 0 16px rgba(107,191,184,0.4)" : "none",
                           }}
                         >
                           {isToday || completed ? (
                             <Check
-                              size={14}
+                              size={13}
                               strokeWidth={3}
-                              style={{ color: isToday ? "#0b1715" : "rgba(107,191,184,0.9)" }}
+                              style={{ color: isToday ? "#0b1715" : "#6bbfb8" }}
                             />
                           ) : (
                             <span
                               className="text-[12px] font-black"
-                              style={{ color: isPast ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.38)" }}
+                              style={{ color: "rgba(255,255,255,0.3)" }}
                             >
                               {day.getDate()}
                             </span>
@@ -397,7 +398,7 @@ export default function ReportPage() {
             {/* Stats row */}
             <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
               <div className="ios-inset-grouped p-4">
-                <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Weight</div>
+                <div className="mb-2.5 text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "#6bbfb8" }}>Weight</div>
                 <div className="number-text flex items-baseline gap-1 leading-none">
                   <span className="text-[32px] font-black text-[var(--text)]">
                     {weightKg || <span className="text-[var(--text-muted)]">--</span>}
@@ -407,7 +408,7 @@ export default function ReportPage() {
               </div>
 
               <div className="ios-inset-grouped p-4">
-                <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Sessions</div>
+                <div className="mb-2.5 text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "#6bbfb8" }}>Sessions</div>
                 <div className="number-text flex items-baseline gap-1.5 leading-none">
                   <span className="text-[32px] font-black text-[var(--text)]">{logs.length}</span>
                   {profile?.workoutsPerWeek ? (
@@ -421,7 +422,7 @@ export default function ReportPage() {
             {/* BMI */}
             <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden p-4 min-[420px]:p-5">
               <div className="mb-5 flex items-center justify-between gap-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">BMI</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "#6bbfb8" }}>BMI</span>
                 <div className="flex items-baseline gap-2">
                   <span className="number-text text-[28px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</span>
                   <span className="text-[14px] font-bold" style={{ color: bmiStatus.color }}>{bmiStatus.label}</span>
@@ -537,7 +538,7 @@ export default function ReportPage() {
             {/* Most trained */}
             <motion.section variants={fadeUp} className="ios-inset-grouped p-5">
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Most Trained</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "#6bbfb8" }}>Most Trained</span>
                 <span className="text-[10px] text-[var(--text-muted)]">last 30 days</span>
               </div>
               {topMuscles.length > 0 ? (
@@ -548,12 +549,13 @@ export default function ReportPage() {
                         <span className="font-extrabold text-[var(--text)]">{muscle.group}</span>
                         <span className="number-text font-black text-[var(--accent-strong)]">{muscle.pct}%</span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                      <div className="h-[5px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${muscle.pct}%` }}
-                          transition={{ duration: 0.65, delay: index * 0.07, ease: "easeOut" }}
-                          className="h-full rounded-full bg-[var(--accent)]"
+                          transition={{ duration: 0.7, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                          className="h-full rounded-full"
+                          style={{ background: "linear-gradient(90deg, #4a9e98, #6bbfb8)" }}
                         />
                       </div>
                     </div>
