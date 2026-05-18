@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Activity, Check, PencilLine, Ruler, Save, Scale, ShieldCheck } from "lucide-react"
+import { Check, MoreHorizontal, PencilLine, Ruler, Save, Scale, ShieldCheck } from "lucide-react"
 import { SkeletonCard } from "@/components/Skeleton"
 import FlameIcon from "@/components/FlameIcon"
 
@@ -228,10 +228,13 @@ export default function ReportPage() {
 
   // Current week Mon–Sun — client-only to avoid SSR/hydration mismatch
   const [today, setToday] = useState<Date | null>(null)
+  const [weekNumber, setWeekNumber] = useState<number | null>(null)
   useEffect(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
     setToday(d)
+    const start = new Date(d.getFullYear(), 0, 1)
+    setWeekNumber(Math.ceil((((d.getTime() - start.getTime()) / 86400000) + start.getDay() + 1) / 7))
   }, [])
   const weekDays = useMemo(() => {
     if (!today) return []
@@ -273,9 +276,19 @@ export default function ReportPage() {
   return (
     <div className="min-h-dvh bg-transparent px-4 pb-[118px] pt-8 sm:px-6">
       <motion.div initial="hidden" animate="visible" className="mx-auto w-full max-w-[640px]">
-        <motion.header variants={fadeUp} className="mb-7">
-          <p className="label-text mb-2 text-[10px] text-[var(--text-muted)]">Body intelligence</p>
-          <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
+        <motion.header variants={fadeUp} className="mb-7 flex items-start justify-between">
+          <div>
+            <p className="label-text mb-1.5 text-[10px] text-[var(--text-muted)]">
+              {weekNumber ? `WEEK ${weekNumber} · ` : ""}THIS WEEK
+            </p>
+            <h1 className="display-text text-[34px] font-black leading-[0.95] text-[var(--text)]">Report</h1>
+          </div>
+          <button
+            type="button"
+            className="mt-1 grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]"
+          >
+            <MoreHorizontal size={17} strokeWidth={2} />
+          </button>
         </motion.header>
 
         {loading ? (
@@ -380,48 +393,34 @@ export default function ReportPage() {
             {/* Stats row */}
             <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
               <div className="ios-inset-grouped p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
-                    <Scale size={15} />
-                  </div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.09em] text-[var(--text-muted)]">Weight</span>
-                </div>
-                <div className="number-text text-[30px] font-black leading-none text-[var(--text)]">
-                  {weightKg || <span className="text-[var(--text-muted)]">--</span>}
-                  <span className="ml-1 text-sm font-bold text-[var(--text-muted)]">kg</span>
+                <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Weight</div>
+                <div className="number-text flex items-baseline gap-1 leading-none">
+                  <span className="text-[32px] font-black text-[var(--text)]">
+                    {weightKg || <span className="text-[var(--text-muted)]">--</span>}
+                  </span>
+                  <span className="text-[14px] font-bold text-[var(--text-muted)]">kg</span>
                 </div>
               </div>
 
               <div className="ios-inset-grouped p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
-                    <Activity size={15} />
-                  </div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.09em] text-[var(--text-muted)]">Sessions</span>
-                </div>
-                <div className="number-text flex items-baseline gap-0.5 leading-none">
-                  <span className="text-[30px] font-black text-[var(--text)]">{logs.length}</span>
+                <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Sessions</div>
+                <div className="number-text flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[32px] font-black text-[var(--text)]">{logs.length}</span>
                   {profile?.workoutsPerWeek ? (
-                    <>
-                      <span className="text-[20px] font-bold text-[var(--text-muted)]">/</span>
-                      <span className="text-[20px] font-bold text-[var(--text-muted)]">{profile.workoutsPerWeek}</span>
-                    </>
+                    <span className="text-[16px] font-semibold text-[var(--text-muted)]">of {profile.workoutsPerWeek}</span>
                   ) : null}
                 </div>
-                <div className="mt-1.5 text-[11px] font-semibold text-[var(--text-muted)]">{totalExercises} exercises</div>
+                <div className="mt-1.5 text-[12px] text-[var(--text-muted)]">{totalExercises} exercises</div>
               </div>
             </motion.section>
 
             {/* BMI */}
             <motion.section variants={fadeUp} className="ios-inset-grouped overflow-hidden p-4 min-[420px]:p-5">
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <div>
-                  <div className="mb-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">BMI</div>
-                  <div className="number-text text-[42px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</div>
-                </div>
-                <div className="mb-1 flex items-center gap-2 text-sm font-extrabold" style={{ color: bmiStatus.color }}>
-                  <span className="h-3 w-3 rounded-full" style={{ background: bmiStatus.color }} />
-                  {bmiStatus.label}
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">BMI</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="number-text text-[28px] font-black leading-none text-[var(--text)]">{bmi ? bmi.toFixed(1) : "--"}</span>
+                  <span className="text-[14px] font-bold" style={{ color: bmiStatus.color }}>{bmiStatus.label}</span>
                 </div>
               </div>
 
@@ -533,10 +532,9 @@ export default function ReportPage() {
 
             {/* Most trained */}
             <motion.section variants={fadeUp} className="ios-inset-grouped p-5">
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-4 flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">Most Trained</span>
-                <span className="text-[10px] text-[var(--text-muted)]">·</span>
-                <span className="text-[10px] font-bold text-[var(--text-muted)]">last 30 days</span>
+                <span className="text-[10px] text-[var(--text-muted)]">last 30 days</span>
               </div>
               {topMuscles.length > 0 ? (
                 <div className="grid gap-3">
