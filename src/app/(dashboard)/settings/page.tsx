@@ -300,13 +300,14 @@ export default function SettingsPage() {
     ? Math.min(100, Math.round((stats.currentWeek / workoutsPerWeek) * 100))
     : 0
 
-  // Derive join month from oldest log or session
-  const joinLabel = useMemo(() => {
-    if (logs.length === 0) return null
+  // Derive join month — client-only to avoid SSR hydration mismatch
+  const [joinLabel, setJoinLabel] = useState<string | null>(null)
+  useEffect(() => {
+    if (logs.length === 0) return
     const oldest = logs.reduce((min, log) =>
       log.completedAt < min ? log.completedAt : min, logs[0].completedAt)
     const d = new Date(oldest)
-    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()
+    setJoinLabel(d.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase())
   }, [logs])
 
   const statRows = [
@@ -461,8 +462,8 @@ export default function SettingsPage() {
                         <div className="truncate text-[13px] font-semibold text-[var(--text)]">
                           {formatTokenReason(tx.reason, tx.workoutName)}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">
-                          {new Date(tx.createdAt).toLocaleDateString()}
+                        <div className="mt-0.5 text-[11px] text-[var(--text-muted)]" suppressHydrationWarning>
+                          {new Date(tx.createdAt).toLocaleDateString("en-US")}
                         </div>
                       </div>
                       <div className="shrink-0 text-[13px] font-black" style={{ color: ACCENT }}>

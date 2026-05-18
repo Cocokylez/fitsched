@@ -153,6 +153,8 @@ export default function SchedulePage() {
   const { t, language } = useLanguage()
   const { theme } = useTheme()
   const dayNames = [t.days.sun, t.days.mon, t.days.tue, t.days.wed, t.days.thu, t.days.fri, t.days.sat]
+  const [greeting, setGreeting] = useState("")
+  useEffect(() => { setGreeting(getTimeGreeting(language)) }, [language])
   const [streak, setStreak] = useState(0)
   const [previousStreak, setPreviousStreak] = useState(0)
   const [streakBroken, setStreakBroken] = useState(false)
@@ -331,7 +333,8 @@ export default function SchedulePage() {
 
   const selectedDate = weekDates[selectedDay]
   const selectedDateId = selectedDate ? formatLocalDate(selectedDate) : ""
-  const todayDateId = formatLocalDate(new Date())
+  const [todayDateId, setTodayDateId] = useState("")
+  useEffect(() => { setTodayDateId(formatLocalDate(new Date())) }, [])
   const canStartExerciseToday = Boolean(selectedDateId && selectedDateId === todayDateId)
 
   const resetManualForm = () => {
@@ -468,7 +471,7 @@ export default function SchedulePage() {
         <div data-dashboard-scroll style={{ padding: "22px 20px", flex: 1, overflowY: "auto", paddingBottom: "108px" }}>
           <motion.div variants={stagger} initial="hidden" animate="visible">
             <motion.div variants={fadeUp}>
-              <div style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>{getTimeGreeting(language)}</div>
+              <div style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>{greeting}</div>
               <div className="display-text" style={{ fontSize: "34px", fontWeight: 900, color: "var(--text)", lineHeight: 0.98, marginBottom: "18px" }}>{t.yourDay}</div>
               <StreakWelcomeCard
                 streak={streak}
@@ -813,7 +816,7 @@ export default function SchedulePage() {
                 <div>
                   <div style={{ fontSize: "20px", fontWeight: 900, letterSpacing: "-0.2px" }}>{editingBlockId ? t.editSchedule : t.addSchedule}</div>
                   <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                    {selectedDate ? `${dayNames[selectedDay]}, ${selectedDate.toLocaleDateString([], { month: "short", day: "numeric" })}` : "This week"}
+                    {selectedDate ? `${dayNames[selectedDay]}, ${selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : "This week"}
                   </div>
                 </div>
                 <button
