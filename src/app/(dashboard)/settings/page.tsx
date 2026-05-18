@@ -4,43 +4,20 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Activity, Building2, Dumbbell, Home } from "lucide-react"
+import { Activity, Building2, Dumbbell, Home, Settings } from "lucide-react"
 import { useLanguage } from "@/context/LanguageContext"
 import { SkeletonCard } from "@/components/Skeleton"
 
 const ACCENT = "#6bbfb8"
 
-const cardStyle = {
-  background: "var(--panel)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid var(--border)",
-  borderRadius: "20px",
-  padding: "17px 20px",
-  marginBottom: "12px",
-  boxShadow: "var(--shadow)",
-  width: "100%",
-  boxSizing: "border-box" as const,
-}
-
-const sectionLabelStyle = {
-  fontSize: "10px",
-  fontWeight: "800",
-  letterSpacing: "0.11em",
-  color: "var(--text-muted)",
-  marginBottom: "10px",
-  marginTop: "24px",
-  textTransform: "uppercase" as const,
-}
-
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } },
+  visible: { transition: { staggerChildren: 0.06 } },
 }
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: "easeOut" as const } },
 }
 
 type WorkoutEnvironment = "home_bodyweight" | "home_dumbbells" | "gym"
@@ -105,7 +82,6 @@ function calculateCurrentStreak(logs: WorkoutLog[]) {
   const uniqueDates = new Set(logs.map((log) => toDateId(new Date(log.completedAt))))
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
   let streak = 0
   for (let i = 0; i < 365; i++) {
     const expected = new Date(today)
@@ -113,7 +89,6 @@ function calculateCurrentStreak(logs: WorkoutLog[]) {
     if (!uniqueDates.has(toDateId(expected))) break
     streak++
   }
-
   return streak
 }
 
@@ -152,17 +127,14 @@ function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string
     let frame = 0
     const totalFrames = 34
     const start = performance.now()
-
     const tick = (now: number) => {
       const elapsed = now - start
       const progress = Math.min(elapsed / 850, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
       setDisplay(Math.round(value * eased))
       frame++
-
       if (progress < 1 && frame < totalFrames * 2) requestAnimationFrame(tick)
     }
-
     const animation = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(animation)
   }, [value])
@@ -171,10 +143,7 @@ function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string
 }
 
 function formatFitTokenAmount(value: number) {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function formatTokenReason(reason: string, workoutName: string) {
@@ -185,7 +154,7 @@ function formatTokenReason(reason: string, workoutName: string) {
 
 function ChevronRightIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" className="text-[var(--text-muted)] shrink-0">
       <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -204,10 +173,7 @@ export default function SettingsPage() {
   const [workoutsPerWeek, setWorkoutsPerWeek] = useState(3)
   const [workoutEnvironment, setWorkoutEnvironment] = useState<WorkoutEnvironment>("gym")
   const [savingWorkoutEnvironment, setSavingWorkoutEnvironment] = useState(false)
-  const [fitTokens, setFitTokens] = useState<FitTokenData>({
-    balance: 0,
-    transactions: [],
-  })
+  const [fitTokens, setFitTokens] = useState<FitTokenData>({ balance: 0, transactions: [] })
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login")
@@ -225,7 +191,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (status !== "authenticated") return
-
     const load = async () => {
       setLoading(true)
       try {
@@ -235,29 +200,20 @@ export default function SettingsPage() {
           fetch("/api/onboarding"),
           fetch("/api/tokens"),
         ])
-
         if (calendarRes.ok) {
           const data = await calendarRes.json()
           setIsCalendarConnected(data.connected)
         }
-
-        if (logRes.ok) {
-          setLogs(await logRes.json())
-        }
-
+        if (logRes.ok) setLogs(await logRes.json())
         if (profileRes.ok) {
           const profile = (await profileRes.json()) as ProfileData
           if (profile.workoutsPerWeek) setWorkoutsPerWeek(profile.workoutsPerWeek)
           if (profile.workoutEnvironment) setWorkoutEnvironment(profile.workoutEnvironment)
         }
-
-        if (tokenRes.ok) {
-          setFitTokens((await tokenRes.json()) as FitTokenData)
-        }
+        if (tokenRes.ok) setFitTokens((await tokenRes.json()) as FitTokenData)
       } catch {}
       setLoading(false)
     }
-
     load()
   }, [status])
 
@@ -293,14 +249,12 @@ export default function SettingsPage() {
     const previous = workoutEnvironment
     setWorkoutEnvironment(next)
     setSavingWorkoutEnvironment(true)
-
     try {
       const res = await fetch("/api/onboarding", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workoutEnvironment: next }),
       })
-
       if (!res.ok) throw new Error("Failed to save workout setup")
     } catch {
       setWorkoutEnvironment(previous)
@@ -339,7 +293,6 @@ export default function SettingsPage() {
     const currentWeek = getCurrentWeekCount(logs)
     const currentStreak = calculateCurrentStreak(logs)
     const longestStreak = calculateLongestStreak(logs)
-
     return { totalWorkouts, totalExercisesDone, currentWeek, currentStreak, longestStreak }
   }, [logs])
 
@@ -347,286 +300,211 @@ export default function SettingsPage() {
     ? Math.min(100, Math.round((stats.currentWeek / workoutsPerWeek) * 100))
     : 0
 
+  // Derive join month from oldest log or session
+  const joinLabel = useMemo(() => {
+    if (logs.length === 0) return null
+    const oldest = logs.reduce((min, log) =>
+      log.completedAt < min ? log.completedAt : min, logs[0].completedAt)
+    const d = new Date(oldest)
+    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()
+  }, [logs])
+
+  const statRows = [
+    { label: "Workouts done", sub: "lifetime", value: stats.totalWorkouts, suffix: "" },
+    { label: "Exercises done", sub: "lifetime", value: stats.totalExercisesDone, suffix: "" },
+    { label: "This week", sub: `${stats.currentWeek} of ${workoutsPerWeek} sessions`, value: currentWeekPct, suffix: "%" },
+    { label: "Best streak", sub: "days", value: stats.longestStreak, suffix: "" },
+  ]
+
   return (
-    <div style={{ padding: "32px 16px 118px", minHeight: "100vh", background: "transparent" }}>
-      <motion.div variants={stagger} initial="hidden" animate="visible" style={{ width: "100%", maxWidth: 720, margin: "0 auto" }}>
-        <motion.div variants={fadeUp}>
-          <div style={{ fontSize: "22px", fontWeight: "bold", color: "var(--text)", marginBottom: "18px" }}>
-            <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-              {t.settings}
-            </motion.span>
-          </div>
+    <div className="min-h-dvh bg-transparent px-4 pb-[118px] pt-8 sm:px-6">
+      <motion.div variants={stagger} initial="hidden" animate="visible" className="mx-auto w-full max-w-[520px]">
+
+        {/* Header */}
+        <motion.div variants={fadeUp} className="mb-8 flex items-center justify-between">
+          <h1 className="display-text text-[32px] font-black leading-none text-[var(--text)]">Profile</h1>
+          <button
+            type="button"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] transition-colors active:bg-[var(--surface)]"
+          >
+            <Settings size={18} strokeWidth={1.8} />
+          </button>
         </motion.div>
 
         {loading ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <SkeletonCard height="88px" />
-            <SkeletonCard height="70px" />
-            <SkeletonCard height="160px" />
-            <SkeletonCard height="160px" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </motion.div>
         ) : (
           <>
-            <motion.div variants={fadeUp}>
-              <div className="shine-surface" style={{ ...cardStyle, display: "flex", alignItems: "center", gap: "14px" }}>
-                <div style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, rgba(107,191,184,0.96), rgba(40,73,70,0.92))",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "15px",
-                  fontWeight: 800,
-                  letterSpacing: "0.03em",
-                  flexShrink: 0,
-                  boxShadow: "0 8px 24px rgba(99,102,241,0.25)",
-                }}>
-                  {initials}
+            {/* Avatar hero */}
+            <motion.div variants={fadeUp} className="mb-7 flex flex-col items-center">
+              {/* Ring + avatar */}
+              <div className="relative mb-3">
+                <svg width="116" height="116" viewBox="0 0 116 116" fill="none" aria-hidden="true" className="absolute inset-0">
+                  <circle cx="58" cy="58" r="54" stroke="rgba(107,191,184,0.18)" strokeWidth="2.5" />
+                  <circle cx="58" cy="58" r="54" stroke="#6bbfb8" strokeWidth="2.5"
+                    strokeDasharray="280 60" strokeLinecap="round"
+                    strokeDashoffset="72"
+                    style={{ filter: "drop-shadow(0 0 6px rgba(107,191,184,0.5))" }}
+                  />
+                </svg>
+                <div className="relative m-[8px] flex h-[100px] w-[100px] items-center justify-center rounded-full text-white"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(107,191,184,0.95), rgba(32,68,64,0.96))",
+                    boxShadow: "0 8px 32px rgba(107,191,184,0.28)",
+                  }}
+                >
+                  <span className="display-text text-[28px] font-black tracking-tight">{initials}</span>
                 </div>
-                <div style={{ minWidth: 0 }}>
-                  <div className="display-text" style={{ fontSize: "17px", fontWeight: 800, color: "var(--text)" }}>{profileName}</div>
-                  <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {profileEmail}
+                {/* Streak badge */}
+                {stats.currentStreak > 0 && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-lg"
+                    style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.18)" }}
+                  >
+                    <span className="text-[13px]">🔥</span>
+                    <span className="number-text text-[12px] font-black text-[#1a1a1a]">{stats.currentStreak} d</span>
                   </div>
-                </div>
+                )}
               </div>
-            </motion.div>
 
-            <motion.div variants={fadeUp}>
-              {stats.currentStreak > 0 ? (
-                <div style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  background: "rgba(107, 191, 184, 0.12)",
-                  border: "1px solid rgba(107, 191, 184, 0.32)",
-                  color: ACCENT,
-                  borderRadius: "999px",
-                  padding: "8px 14px",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  marginBottom: "14px",
-                }}>
-                  <span>🔥</span>
-                  <span className="number-text"><AnimatedNumber value={stats.currentStreak} /> day streak</span>
-                </div>
-              ) : (
-                <div style={{ color: "var(--text-muted)", fontSize: "13px", margin: "2px 0 16px" }}>
-                  Start your streak today
-                </div>
+              {/* Name / email / join */}
+              <h2 className="display-text mt-3 text-[24px] font-black text-[var(--text)]">{profileName}</h2>
+              <p className="mt-1 text-[13px] text-[var(--text-muted)]">{profileEmail}</p>
+              {joinLabel && (
+                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                  Joined {joinLabel}
+                </p>
               )}
-            </motion.div>
 
-            <motion.div variants={fadeUp}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
-                <div style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  background: "rgba(107, 191, 184, 0.12)",
-                  border: "1px solid rgba(107, 191, 184, 0.32)",
-                  color: ACCENT,
-                  borderRadius: "999px",
-                  padding: "8px 14px",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                }}>
-                  <span style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: "999px",
-                    border: "1px solid rgba(107, 191, 184, 0.38)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "9px",
-                    fontWeight: 900,
-                    lineHeight: 1,
-                    flexShrink: 0,
-                  }}>
-                    FT
+              {/* Token pills */}
+              <div className="mt-5 flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-full border px-4 py-2"
+                  style={{ borderColor: "rgba(107,191,184,0.36)", background: "rgba(107,191,184,0.1)" }}
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-black"
+                    style={{ borderColor: "rgba(107,191,184,0.4)", color: ACCENT }}
+                  >FT</span>
+                  <span className="text-[13px] font-bold" style={{ color: ACCENT }}>
+                    FitTokens · <span className="number-text font-black">{formatFitTokenAmount(fitTokens.balance)}</span>
                   </span>
-                  <span>FitTokens</span>
-                  <span className="number-text">{formatFitTokenAmount(fitTokens.balance)}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => router.push("/withdrawal")}
-                  className="motion-lift"
-                  style={{
-                    border: "1px solid var(--border)",
-                    background: "var(--surface-2)",
-                    color: "var(--text)",
-                    borderRadius: "999px",
-                    padding: "8px 14px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[13px] font-bold text-[var(--text)] transition-colors active:bg-[var(--surface)]"
                 >
-                  Withdrawal
+                  Withdraw
                 </button>
               </div>
             </motion.div>
 
+            {/* BY THE NUMBERS */}
             <motion.div variants={fadeUp}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                {[
-                  { value: stats.totalWorkouts, suffix: "", label: "Workouts completed" },
-                  { value: stats.totalExercisesDone, suffix: "", label: "Exercises done" },
-                  { value: currentWeekPct, suffix: "%", label: "This week" },
-                  { value: stats.longestStreak, suffix: "", label: "Longest streak" },
-                ].map((stat, i) => (
-                  <div key={i} className="motion-lift" style={{ ...cardStyle, textAlign: "left", marginBottom: 0, padding: "15px 14px" }}>
-                    <div className="number-text" style={{ fontSize: "30px", fontWeight: 800, color: "var(--text)", lineHeight: 1 }}>
-                      <AnimatedNumber value={stat.value} suffix={stat.suffix} />
+              <div className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                By the numbers
+              </div>
+              <div className="overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
+                {statRows.map((row, i) => (
+                  <div
+                    key={row.label}
+                    className={`flex items-center justify-between px-5 py-4 ${i < statRows.length - 1 ? "border-b border-[var(--border)]" : ""}`}
+                  >
+                    <div>
+                      <div className="text-[15px] font-bold text-[var(--text)]">{row.label}</div>
+                      <div className="mt-0.5 text-[12px] text-[var(--text-muted)]">{row.sub}</div>
                     </div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.25 }}>
-                      {stat.label}
+                    <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">
+                      <AnimatedNumber value={row.value} suffix={row.suffix} />
                     </div>
                   </div>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp}>
+            {/* Body report link */}
+            <motion.div variants={fadeUp} className="mt-3">
               <button
                 type="button"
                 onClick={() => router.push("/report")}
-                className="motion-lift"
-                style={{
-                  ...cardStyle,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "14px",
-                  marginTop: "12px",
-                  textAlign: "left",
-                  cursor: "pointer",
-                }}
+                className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4 text-left transition-colors active:bg-[var(--surface)]"
               >
-                <span style={{ display: "flex", alignItems: "center", gap: "13px", minWidth: 0 }}>
-                  <span
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: "15px",
-                      display: "grid",
-                      placeItems: "center",
-                      color: ACCENT,
-                      background: "rgba(107,191,184,0.12)",
-                      border: "1px solid rgba(107,191,184,0.24)",
-                      flexShrink: 0,
-                    }}
-                  >
+                <span className="flex items-center gap-3 min-w-0">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border border-[var(--border-strong)] bg-[var(--accent-soft)]" style={{ color: ACCENT }}>
                     <Activity size={20} strokeWidth={1.8} />
                   </span>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", color: "var(--text)", fontSize: "14px", fontWeight: 800 }}>
-                      Body report
-                    </span>
-                    <span style={{ display: "block", color: "var(--text-muted)", fontSize: "11px", marginTop: "3px" }}>
-                      BMI, weight, injury notes, and training patterns
-                    </span>
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-bold text-[var(--text)]">Body report</span>
+                    <span className="block mt-0.5 text-[12px] text-[var(--text-muted)]">BMI, weight, injury notes</span>
                   </span>
                 </span>
                 <ChevronRightIcon />
               </button>
             </motion.div>
 
+            {/* FitToken Earnings */}
             <motion.div variants={fadeUp}>
-              <div style={sectionLabelStyle}>FitToken Earnings</div>
-              <div style={{ ...cardStyle, padding: "6px 0", overflow: "hidden" }}>
+              <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                FitToken Earnings
+              </div>
+              <div className="overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
                 {fitTokens.transactions.length > 0 ? (
-                  fitTokens.transactions.map((transaction, index) => (
+                  fitTokens.transactions.map((tx, i) => (
                     <div
-                      key={transaction.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "14px",
-                        padding: "12px 16px",
-                        borderBottom: index < fitTokens.transactions.length - 1 ? "1px solid var(--border)" : "none",
-                      }}
+                      key={tx.id}
+                      className={`flex items-center justify-between gap-3 px-5 py-3.5 ${i < fitTokens.transactions.length - 1 ? "border-b border-[var(--border)]" : ""}`}
                     >
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: "13px", fontWeight: 650, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {formatTokenReason(transaction.reason, transaction.workoutName)}
+                      <div className="min-w-0">
+                        <div className="truncate text-[13px] font-semibold text-[var(--text)]">
+                          {formatTokenReason(tx.reason, tx.workoutName)}
                         </div>
-                        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "3px" }}>
-                          {new Date(transaction.createdAt).toLocaleDateString()}
+                        <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">
+                          {new Date(tx.createdAt).toLocaleDateString()}
                         </div>
                       </div>
-                      <div style={{ color: ACCENT, fontSize: "13px", fontWeight: 800, flexShrink: 0 }}>
-                        +{formatFitTokenAmount(transaction.amount)}
+                      <div className="shrink-0 text-[13px] font-black" style={{ color: ACCENT }}>
+                        +{formatFitTokenAmount(tx.amount)}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div style={{ padding: "18px 16px", color: "var(--text-muted)", fontSize: "13px", textAlign: "center" }}>
+                  <div className="px-5 py-6 text-center text-[13px] text-[var(--text-muted)]">
                     Complete a workout to earn your first FitToken.
                   </div>
                 )}
               </div>
             </motion.div>
 
+            {/* Calendar */}
             <motion.div variants={fadeUp}>
-              <div style={sectionLabelStyle}>{t.calendar}</div>
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
-              <div style={cardStyle}>
+              <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                {t.calendar}
+              </div>
+              <div className="rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4">
                 {isCalendarConnected ? (
                   <>
-                    <div style={{ fontSize: "14px", color: "var(--text)" }}>{t.googleConnected}</div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>{t.readOnly}</div>
-                    <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-                      <button onClick={syncCalendar} disabled={syncing} style={{
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "10px",
-                        padding: "8px 16px",
-                        color: "var(--text)",
-                        fontSize: "13px",
-                        cursor: "pointer",
-                        opacity: syncing ? 0.5 : 1,
-                      }}>
+                    <div className="text-[14px] font-semibold text-[var(--text)]">{t.googleConnected}</div>
+                    <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{t.readOnly}</div>
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={syncCalendar} disabled={syncing}
+                        className="rounded-[10px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[13px] text-[var(--text)] disabled:opacity-50">
                         {syncing ? t.syncing : t.syncNow}
                       </button>
-                      <button onClick={disconnectCalendar} style={{
-                        background: "rgba(255,50,50,0.15)",
-                        border: "1px solid rgba(255,50,50,0.3)",
-                        borderRadius: "10px",
-                        padding: "8px 16px",
-                        color: "#d96060",
-                        fontSize: "13px",
-                        cursor: "pointer",
-                      }}>
+                      <button onClick={disconnectCalendar}
+                        className="rounded-[10px] border border-[rgba(255,50,50,0.3)] bg-[rgba(255,50,50,0.1)] px-4 py-2 text-[13px] text-[#d96060]">
                         {t.disconnect}
                       </button>
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: "center", padding: "8px 0" }}>
-                    <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)", marginBottom: "4px" }}>{t.connectCalendar}</div>
-                    <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "14px", lineHeight: 1.4 }}>
-                      {t.syncDescription}
-                    </p>
-                    <button onClick={connectCalendar} disabled={connecting} style={{
-                      background: "var(--surface-2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "10px",
-                      padding: "10px 20px",
-                      color: "var(--text)",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      opacity: connecting ? 0.5 : 1,
-                    }}>
+                  <div className="py-2 text-center">
+                    <div className="mb-1 text-[15px] font-bold text-[var(--text)]">{t.connectCalendar}</div>
+                    <p className="mb-4 text-[12px] leading-relaxed text-[var(--text-muted)]">{t.syncDescription}</p>
+                    <button onClick={connectCalendar} disabled={connecting}
+                      className="rounded-[10px] border border-[var(--border)] bg-[var(--surface-2)] px-5 py-2.5 text-[13px] font-semibold text-[var(--text)] disabled:opacity-50">
                       {connecting ? t.connecting : t.signInWithGoogle}
                     </button>
                   </div>
@@ -634,27 +512,22 @@ export default function SettingsPage() {
               </div>
             </motion.div>
 
+            {/* Workout Setup */}
             <motion.div variants={fadeUp}>
-              <div style={sectionLabelStyle}>{t.preferences}</div>
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
-              <div style={cardStyle}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
+              <div className="mb-3 mt-7 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                {t.preferences}
+              </div>
+              <div className="rounded-[20px] border border-[var(--border)] bg-[var(--panel)] px-5 py-4">
+                <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
-                    <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: 700 }}>{t.workoutSetup}</div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
-                      {t.workoutSetupDescription}
-                    </div>
+                    <div className="text-[14px] font-bold text-[var(--text)]">{t.workoutSetup}</div>
+                    <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{t.workoutSetupDescription}</div>
                   </div>
                   {savingWorkoutEnvironment && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 700, paddingTop: "2px" }}>
-                      {t.saving}
-                    </div>
+                    <div className="pt-0.5 text-[11px] font-bold text-[var(--text-muted)]">{t.saving}</div>
                   )}
                 </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
+                <div className="grid grid-cols-3 gap-2">
                   {WORKOUT_SETUP_OPTIONS.map((option) => {
                     const selected = workoutEnvironment === option.id
                     return (
@@ -663,26 +536,16 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => saveWorkoutEnvironment(option.id)}
                         disabled={savingWorkoutEnvironment}
+                        className="flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-[14px] border px-2 py-3 text-center transition-colors disabled:opacity-70"
                         style={{
-                          minWidth: 0,
-                          minHeight: "86px",
                           border: `1px solid ${selected ? "rgba(107,191,184,0.72)" : "var(--border)"}`,
                           background: selected ? "rgba(107,191,184,0.12)" : "var(--surface-2)",
                           color: selected ? ACCENT : "var(--text)",
-                          borderRadius: "14px",
-                          padding: "11px 8px",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "7px",
-                          cursor: savingWorkoutEnvironment ? "default" : "pointer",
-                          opacity: savingWorkoutEnvironment ? 0.72 : 1,
                         }}
                       >
                         <option.Icon size={18} strokeWidth={1.8} />
-                        <span style={{ fontSize: "12px", fontWeight: 800, lineHeight: 1.1 }}>{t[option.labelKey]}</span>
-                        <span style={{ color: "var(--text-muted)", fontSize: "10px", lineHeight: 1.15 }}>{t[option.subKey]}</span>
+                        <span className="text-[12px] font-extrabold leading-tight">{t[option.labelKey]}</span>
+                        <span className="text-[10px] leading-tight text-[var(--text-muted)]">{t[option.subKey]}</span>
                       </button>
                     )
                   })}
@@ -690,54 +553,31 @@ export default function SettingsPage() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp}>
-              <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {/* Push + Language + Version */}
+            <motion.div variants={fadeUp} className="mt-3 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--panel)]">
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
                 <div>
-                  <div style={{ fontSize: "14px", color: "var(--text)" }}>{t.pushNotifications}</div>
-                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>{pushEnabled ? t.enabled : t.workoutReminders}</div>
+                  <div className="text-[14px] font-semibold text-[var(--text)]">{t.pushNotifications}</div>
+                  <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{pushEnabled ? t.enabled : t.workoutReminders}</div>
                 </div>
-                <div onClick={togglePush} style={{ width: 48, height: 28, borderRadius: 14, position: "relative", background: pushEnabled ? ACCENT : "var(--border)", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#e8e8e8", position: "absolute", top: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.3)", transition: "transform 0.2s", transform: pushEnabled ? "translateX(24px)" : "translateX(3px)" }} />
+                <div onClick={togglePush} className="relative h-7 w-12 cursor-pointer rounded-full transition-colors"
+                  style={{ background: pushEnabled ? ACCENT : "var(--border)" }}>
+                  <div className="absolute top-[3px] h-[22px] w-[22px] rounded-full bg-[#e8e8e8] shadow-sm transition-transform"
+                    style={{ transform: pushEnabled ? "translateX(24px)" : "translateX(3px)" }} />
                 </div>
               </div>
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
-              <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: "14px", color: "var(--text)" }}>{t.language}</div>
-                <motion.button
-                  onClick={cycleLanguage}
-                  whileTap={{ scale: 0.9 }}
-                  style={{
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "6px 14px",
-                    color: "var(--text)",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    minWidth: "48px",
-                    textAlign: "center",
-                  }}
-                >
-                  <motion.span
-                    key={language}
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 6 }}
-                    transition={{ duration: 0.2 }}
-                  >
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
+                <div className="text-[14px] font-semibold text-[var(--text)]">{t.language}</div>
+                <motion.button onClick={cycleLanguage} whileTap={{ scale: 0.9 }}
+                  className="rounded-[10px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-1.5 text-[13px] font-semibold text-[var(--text)] min-w-[48px] text-center">
+                  <motion.span key={language} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                     {language}
                   </motion.span>
                 </motion.button>
               </div>
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
-              <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: "14px", color: "var(--text)" }}>{t.version}</div>
-                <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>1.0.0</div>
+              <div className="flex items-center justify-between px-5 py-4">
+                <div className="text-[14px] font-semibold text-[var(--text)]">{t.version}</div>
+                <div className="text-[13px] text-[var(--text-muted)]">1.0.0</div>
               </div>
             </motion.div>
           </>
@@ -745,37 +585,22 @@ export default function SettingsPage() {
       </motion.div>
 
       {!loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" as const, delay: 0.25 }}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, ease: "easeOut", delay: 0.22 }}
+          className="mx-auto mt-5 w-full max-w-[520px] px-4 sm:px-6"
         >
-          <button onClick={async () => { await signOut({ callbackUrl: "/login", redirect: true }) }} style={{
-            width: "100%",
-            marginTop: "20px",
-            background: "rgba(255,50,50,0.1)",
-            border: "1px solid rgba(255,50,50,0.25)",
-            borderRadius: "14px",
-            padding: "13px",
-            color: "#d96060",
-            fontSize: "14px",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}>
+          <button
+            onClick={async () => { await signOut({ callbackUrl: "/login", redirect: true }) }}
+            className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-[rgba(255,50,50,0.25)] bg-[rgba(255,50,50,0.09)] py-3.5 text-[14px] font-semibold text-[#d96060]"
+          >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>
             <motion.span key={language} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
               {t.signOut}
             </motion.span>
           </button>
-          <div style={{ textAlign: "center", fontSize: "11px", color: "var(--text-muted)", marginTop: "16px" }}>
-            {t.fitSched} v1.0.0
-          </div>
+          <div className="mt-4 text-center text-[11px] text-[var(--text-muted)]">{t.fitSched} v1.0.0</div>
         </motion.div>
       )}
     </div>
