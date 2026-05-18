@@ -123,7 +123,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`motion-lift mb-5 min-h-[54px] w-full cursor-pointer rounded-[18px] border-0 bg-[var(--text)] px-4 text-[15px] font-black text-[var(--bg)] ${
+                className={`motion-lift mb-5 min-h-[54px] w-full cursor-pointer rounded-[18px] border-0 bg-[var(--accent)] px-4 text-[15px] font-black text-[#0b1715] shadow-[0_0_24px_rgba(107,191,184,0.22)] ${
                   loading ? "opacity-55" : "opacity-100"
                 }`}
               >

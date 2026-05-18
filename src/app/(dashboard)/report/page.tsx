@@ -334,39 +334,44 @@ export default function ReportPage() {
                 })}
               </div>
 
-              <div className="grid grid-cols-1 gap-3 border-t border-[var(--border)] pt-4 min-[520px]:grid-cols-2 min-[520px]:divide-x min-[520px]:divide-[var(--border)]">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
-                    <Flame size={16} className="text-[#e8842a]" />
+              <div className="grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-4">
+                <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-3">
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                    <Flame size={13} className="text-[#e8842a]" />
                     Day streak
                   </div>
-                  <div className="number-text mt-1 text-[24px] font-black text-[var(--text)]">{streak?.streak || 0}</div>
+                  <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">{streak?.streak || 0}</div>
                 </div>
-                <div className="min-[520px]:pl-5 min-[520px]:text-right">
-                  <div className="text-xs font-bold text-[var(--text-muted)]">Personal best</div>
-                  <div className="number-text mt-1 text-[24px] font-black text-[var(--text)]">{longestStreak} days</div>
+                <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-3">
+                  <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">Personal best</div>
+                  <div className="number-text text-[28px] font-black leading-none text-[var(--text)]">{longestStreak}<span className="ml-1 text-base text-[var(--text-muted)]">days</span></div>
                 </div>
               </div>
             </motion.section>
 
-            <motion.section variants={fadeUp} className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
               <div className="ios-inset-grouped p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <Scale size={19} className="text-[var(--accent-strong)]" />
-                  <span className="text-[11px] font-extrabold text-[var(--text-muted)]">Current</span>
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+                    <Scale size={15} />
+                  </div>
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.09em] text-[var(--text-muted)]">Weight</span>
                 </div>
-                <div className="number-text text-[31px] font-black text-[var(--text)]">
-                  {weightKg || "--"}<span className="ml-1 text-base text-[var(--text-muted)]">kg</span>
+                <div className="number-text text-[30px] font-black leading-none text-[var(--text)]">
+                  {weightKg || <span className="text-[var(--text-muted)]">--</span>}
+                  <span className="ml-1 text-sm font-bold text-[var(--text-muted)]">kg</span>
                 </div>
               </div>
 
               <div className="ios-inset-grouped p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <Activity size={19} className="text-[var(--accent-strong)]" />
-                  <span className="text-[11px] font-extrabold text-[var(--text-muted)]">Sessions</span>
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+                    <Activity size={15} />
+                  </div>
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.09em] text-[var(--text-muted)]">Sessions</span>
                 </div>
-                <div className="number-text text-[31px] font-black text-[var(--text)]">{logs.length}</div>
-                <div className="mt-1 text-xs text-[var(--text-muted)]">{totalExercises} exercises logged</div>
+                <div className="number-text text-[30px] font-black leading-none text-[var(--text)]">{logs.length}</div>
+                <div className="mt-1.5 text-[11px] font-semibold text-[var(--text-muted)]">{totalExercises} exercises</div>
               </div>
             </motion.section>
 
