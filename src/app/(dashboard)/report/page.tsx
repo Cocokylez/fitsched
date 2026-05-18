@@ -226,9 +226,15 @@ export default function ReportPage() {
   const topMuscles = useMemo(() => getTopMuscles(logs), [logs])
   const totalExercises = logs.reduce((sum, log) => sum + log.exercises.length, 0)
 
-  // Current week Mon–Sun
-  const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d }, [])
+  // Current week Mon–Sun — client-only to avoid SSR/hydration mismatch
+  const [today, setToday] = useState<Date | null>(null)
+  useEffect(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    setToday(d)
+  }, [])
   const weekDays = useMemo(() => {
+    if (!today) return []
     const dow = today.getDay()
     const monday = addDays(today, -((dow + 6) % 7))
     return Array.from({ length: 7 }, (_, i) => addDays(monday, i))
@@ -321,9 +327,9 @@ export default function ReportPage() {
                 <div className="grid grid-cols-7 gap-1.5">
                   {weekDays.map((day, i) => {
                     const dateId = toDateId(day)
-                    const isToday = dateId === toDateId(today)
+                    const isToday = today ? dateId === toDateId(today) : false
                     const completed = completedDates.has(dateId)
-                    const isPast = day < today && !isToday
+                    const isPast = today ? day < today && !isToday : false
                     return (
                       <div key={dateId} className="flex flex-col items-center gap-1.5">
                         <span
